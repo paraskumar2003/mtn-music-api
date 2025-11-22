@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { MongoUser } from 'src/modules/users/mongo/user.schema';
+import { MongoUser } from 'src/modules/users/schema/user.schema';
 
 export type QuizDocument = Quiz & Document;
 

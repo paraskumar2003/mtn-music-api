@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { BaseSchema } from 'src/common/base.schema';
 
 export type MongoUserDocument = MongoUser & Document;
 
@@ -14,7 +15,7 @@ export enum UserRole {
     timestamps: { createdAt: 'registered_at', updatedAt: true },
     collection: 'users',
 })
-export class MongoUser {
+export class MongoUser extends BaseSchema {
     _id: Types.ObjectId;
 
     @Prop({ required: true })

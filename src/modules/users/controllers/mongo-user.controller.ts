@@ -1,8 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { MongoUsersService } from '../services/mongo-user.service';
 import { RegisterUserDto } from '../dto/create-mongo-user.dto';
+import { VerifyEmailOtpDto } from '../dto/otp/verify-otp.dto';
 
-@Controller('mongo-users')
+@Controller('users')
 export class MongoUsersController {
     constructor(private readonly mongoUsersService: MongoUsersService) {}
 
@@ -12,6 +13,18 @@ export class MongoUsersController {
         body: RegisterUserDto,
     ) {
         const user = await this.mongoUsersService.registerUser(body);
-        return { access_token: user.access_token };
+        return { otp_sent: user.otp_sent };
+    }
+
+    @Post('verify-otp')
+    async verifyOtp(
+        @Body()
+        body: VerifyEmailOtpDto,
+    ) {
+        const result = await this.mongoUsersService.verifyOtp(body);
+        return {
+            otp_verified: result.otp_verified,
+            access_token: result.access_token,
+        };
     }
 }

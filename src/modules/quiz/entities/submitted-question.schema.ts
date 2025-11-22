@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Quiz } from './quiz.schema';
 import { Question, ResponseType } from './question.schema';
-import { MongoUser } from 'src/modules/users/mongo/user.schema';
+import { MongoUser } from 'src/modules/users/schema/user.schema';
 
 export type SubmittedQuestionDocument = SubmittedQuestion & Document;
 
