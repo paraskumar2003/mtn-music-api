@@ -15,10 +15,6 @@ export class Quiz {
     @Prop({ type: Types.ObjectId, ref: MongoUser.name, required: true })
     user: Types.ObjectId;
 
-    // Which questions were part of this quiz (optional)
-    @Prop({ type: [{ type: Types.ObjectId, ref: 'Question' }], default: [] })
-    questions: Types.ObjectId[];
-
     // Total number of questions in the quiz
     @Prop({ required: true })
     total_questions: number;
@@ -29,20 +25,6 @@ export class Quiz {
 
     // Played timestamp handled by timestamps option
     played_at?: Date;
-
-    @Prop({
-        type: [
-            {
-                dimension: { type: String, required: true },
-                score: { type: Number, required: true },
-            },
-        ],
-        default: [],
-    })
-    dimension_scores: {
-        dimension: string;
-        score: number;
-    }[];
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);

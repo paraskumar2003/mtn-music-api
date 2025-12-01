@@ -56,12 +56,18 @@ export class SubmittedQuestion {
     @Prop({ required: true })
     dimension: string;
 
-    // Optional evaluator note (for manual or subjective grading)
-    @Prop({ required: false })
-    evaluator_note?: string;
-
     // Answered timestamp
+    @Prop({ default: null })
     answered_at?: Date;
+
+    @Prop({ required: false })
+    is_evaluated_by_llm: boolean;
+
+    @Prop({ required: false })
+    confidence_score?: number;
+
+    @Prop({ required: false })
+    reason?: string;
 }
 
 export const SubmittedQuestionSchema =

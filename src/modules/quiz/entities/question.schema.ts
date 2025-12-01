@@ -23,8 +23,13 @@ export class Question {
     @Prop({ required: true })
     level: string;
 
-    @Prop({ required: true })
-    question_type: string;
+    @Prop({
+        type: String,
+        enum: ResponseType,
+        required: true,
+        default: ResponseType.MCQ,
+    })
+    question_type: ResponseType;
 
     @Prop({ required: true })
     prompt_html: string;
@@ -64,26 +69,6 @@ export class Question {
 
     @Prop({ type: Types.ObjectId, ref: Quiz.name, required: false })
     quiz: Types.ObjectId;
-
-    @Prop({
-        type: String,
-        enum: ResponseType,
-        required: true,
-        default: ResponseType.MCQ,
-    })
-    response_type: ResponseType;
-
-    @Prop({ required: false })
-    is_evaluated_by_llm: boolean;
-
-    @Prop({ required: false })
-    confidence_score?: number;
-
-    @Prop({ required: false })
-    reason?: string;
-
-    @Prop({ required: false })
-    is_correct?: boolean;
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

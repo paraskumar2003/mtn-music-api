@@ -2,7 +2,6 @@
 
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import * as multerS3 from 'multer-s3';
-import * as multer from 'multer';
 import { v4 as uuid } from 'uuid';
 import { S3Service } from '../s3.service';
 import { NestInterceptor, Type, mixin } from '@nestjs/common';
@@ -25,20 +24,11 @@ export function S3MultipleFieldsInterceptor(
                     const filename = `${uuid()}.${ext}`;
                     cb(
                         null,
-                        `devyani+${process.env.NODE_ENV}/app/upload/${filename}`,
+                        `mtn+${process.env.NODE_ENV}/app/upload/${filename}`,
                     );
                 },
             }),
             fileFilter: (req, file, cb) => {
-                if (!file.mimetype.startsWith('image/')) {
-                    return cb(
-                        new multer.MulterError(
-                            'LIMIT_UNEXPECTED_FILE',
-                            'Only image files are allowed!',
-                        ),
-                        false,
-                    );
-                }
                 cb(null, true);
             },
         }),

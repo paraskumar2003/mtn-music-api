@@ -12,17 +12,17 @@ import { S3MultipleFieldsInterceptor } from './interceptors/s3.interceptor';
 export class S3Controller {
     @Post('upload')
     @UseInterceptors(
-        S3MultipleFieldsInterceptor([{ name: 'image', maxCount: 1 }]),
+        S3MultipleFieldsInterceptor([{ name: 'file', maxCount: 1 }]),
     )
     async uploadSingleImage(
         @UploadedFiles()
         files: {
-            image?: S3MulterFile[];
+            file?: S3MulterFile[];
         },
     ): Promise<{ url: string }> {
-        const uploaded = files?.image?.[0];
+        const uploaded = files?.file?.[0];
         if (!uploaded || !uploaded.location) {
-            throw new BadRequestException('Image file is required');
+            throw new BadRequestException('Media file is required');
         }
 
         return {

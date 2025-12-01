@@ -15,7 +15,7 @@ export class QuizController {
     }
 
     @Post('answer')
-    async answerQuestion(@Body() dto: AnswerQuestionDto) {
-        return this.quizService.answerQuestion(dto);
+    async answerQuestion(@Body() dto: AnswerQuestionDto, @Req() req: Request) {
+        return this.quizService.answerQuestion(dto, req.user.id);
     }
 }
