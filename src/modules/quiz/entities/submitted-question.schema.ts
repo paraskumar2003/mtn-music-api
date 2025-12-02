@@ -3,14 +3,14 @@ import { Document, Types } from 'mongoose';
 import { Quiz } from './quiz.schema';
 import { Question, ResponseType } from './question.schema';
 import { MongoUser } from 'src/modules/users/schema/user.schema';
+import { BaseSchema } from 'src/common/base.schema';
 
 export type SubmittedQuestionDocument = SubmittedQuestion & Document;
 
 @Schema({
-    timestamps: { createdAt: 'answered_at', updatedAt: false },
     collection: 'submitted_questions',
 })
-export class SubmittedQuestion {
+export class SubmittedQuestion extends BaseSchema {
     _id: Types.ObjectId;
 
     // Reference to the quiz in which this question was answered
@@ -72,3 +72,9 @@ export class SubmittedQuestion {
 
 export const SubmittedQuestionSchema =
     SchemaFactory.createForClass(SubmittedQuestion);
+
+// ⭐ Auto-update updated_at
+SubmittedQuestionSchema.pre('save', function (next) {
+    this.updated_at = new Date();
+    next();
+});
