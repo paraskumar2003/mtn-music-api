@@ -9,6 +9,7 @@ import {
 } from '../entities/question.schema';
 import { AnswerQuestionDto } from '../dto/submit-answer.dto';
 import { SubmittedQuestion } from '../entities/submitted-question.schema';
+import { AIService } from 'src/modules/ai/ai.service';
 
 @Injectable()
 export class QuizService {
@@ -19,6 +20,7 @@ export class QuizService {
         private questionModel: Model<QuestionDocument>,
         @InjectModel(SubmittedQuestion.name)
         private submittedQuestionModel: Model<SubmittedQuestion>,
+        private readonly aiService: AIService,
     ) {}
 
     /** 🎯 Initiate quiz — send one question to user */
@@ -68,7 +70,7 @@ export class QuizService {
         const quiz = await this.quizModel.findById(quiz_id);
         if (!quiz) throw new NotFoundException('Quiz not found');
 
-        const question = await this.questionModel.findById(question_id).lean();
+        const question = await this.questionModel.findById(question_id);
         if (!question) throw new NotFoundException('Question not found');
 
         const submittedQuestion = await this.submittedQuestionModel.findOne({
@@ -85,6 +87,9 @@ export class QuizService {
 
         // Initialize scores
         let score = 0;
+        let is_evaluated_by_llm = false;
+        let confidence_score = 0;
+        let reason = '';
         const dimensionImpacts: Record<string, number> = {};
 
         // ✅ 1. Check rubric-based scoring
@@ -106,6 +111,19 @@ export class QuizService {
                 // ✅ 2. Fallback to simple correct/incorrect check if rubric not defined
                 score = 1;
             }
+        } else {
+            // ✅ 3. Fallback to ai answer from ai service
+            const aiResponse = await this.aiService.analyseAnswer(
+                question,
+                answer,
+            );
+
+            score = aiResponse?.is_correct ? 1 : 0;
+            is_evaluated_by_llm = true;
+            confidence_score = aiResponse?.confidence_score || 0;
+            reason = aiResponse?.reason || '';
+            submittedQuestion.err_while_evaluation_by_llm =
+                aiResponse?.is_error || null;
         }
 
         // ✅ 3. Update total score
@@ -131,9 +149,12 @@ export class QuizService {
         submittedQuestion.score = score;
         submittedQuestion.answered_at = new Date();
         submittedQuestion.is_correct = score > 0;
-        submittedQuestion.score = score;
         submittedQuestion.dimension = question.dimension;
-        submittedQuestion.answered_at = new Date();
+
+        /** Update LLM evaluation details */
+        submittedQuestion.is_evaluated_by_llm = is_evaluated_by_llm;
+        submittedQuestion.confidence_score = confidence_score;
+        submittedQuestion.reason = reason;
 
         await submittedQuestion.save();
         await quiz.save();

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Mixed, Types } from 'mongoose';
 import { Quiz } from './quiz.schema';
 import { Question, ResponseType } from './question.schema';
 import { MongoUser } from 'src/modules/users/schema/user.schema';
@@ -68,6 +68,9 @@ export class SubmittedQuestion extends BaseSchema {
 
     @Prop({ required: false })
     reason?: string;
+
+    @Prop({ required: false })
+    err_while_evaluation_by_llm: Mixed;
 }
 
 export const SubmittedQuestionSchema =
