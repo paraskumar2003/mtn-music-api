@@ -46,7 +46,3 @@ export class Otp extends BaseSchema {
 }
 
 export const OtpSchema = SchemaFactory.createForClass(Otp);
-
-// Additional indexes matching SQL indexes
-OtpSchema.index({ status: 1 });
-OtpSchema.index({ active: 1 });

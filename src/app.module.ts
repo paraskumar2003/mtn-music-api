@@ -35,6 +35,7 @@ import { AiModule } from './modules/ai/ai.module';
                 }
             })(),
         }),
+        LoggerModule,
         // MySQL Connection
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
@@ -66,7 +67,6 @@ import { AiModule } from './modules/ai/ai.module';
             useFactory: getMongoConfig,
         }),
         MongoUsersModule,
-        LoggerModule,
         UsersModule,
         QuizModule,
         AiModule,

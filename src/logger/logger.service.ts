@@ -79,24 +79,24 @@ export class CustomLoggerService implements LoggerService {
     log(tag: string, journeyId: string, data: Record<string, any>): void {
         const logData = this.createLogData(tag, journeyId, data);
         this.logger.info(tag, { journeyId, data });
-        console.log(JSON.stringify(logData));
+        console.log(logData);
     }
 
     error(tag: string, journeyId: string, data: Record<string, any>): void {
         const logData = this.createLogData(tag, journeyId, data);
         this.logger.error(tag, { journeyId, data });
-        console.error(JSON.stringify(logData));
+        console.error(logData);
     }
 
     warn(tag: string, journeyId: string, data: Record<string, any>): void {
         const logData = this.createLogData(tag, journeyId, data);
         this.logger.warn(tag, { journeyId, data });
-        console.warn(JSON.stringify(logData));
+        console.warn(logData);
     }
 
     info(tag: string, journeyId: string, data: Record<string, any>): void {
         const logData = this.createLogData(tag, journeyId, data);
         this.logger.info(tag, { journeyId, data });
-        console.info(JSON.stringify(logData));
+        console.info(logData);
     }
 }

@@ -8,6 +8,7 @@ import {
     SubmittedQuestion,
     SubmittedQuestionSchema,
 } from './entities/submitted-question.schema';
+import { AiModule } from '../ai/ai.module';
 
 @Module({
     imports: [
@@ -19,6 +20,7 @@ import {
                 name: SubmittedQuestion.name,
             },
         ]),
+        AiModule,
     ],
     controllers: [QuizController],
     providers: [QuizService],

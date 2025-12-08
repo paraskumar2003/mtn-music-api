@@ -138,11 +138,13 @@ export class MongoUsersService {
         // ------------------------------
         // 1. Find OTP for this mobile
         // ------------------------------
-        const otpRecord = await this.otpModel.findOne({
-            email,
-            active: true,
-            status: 'pending',
-        });
+        const otpRecord = await this.otpModel
+            .findOne({
+                email,
+                active: true,
+                status: 'pending',
+            })
+            .sort({ created_at: -1 });
 
         if (!otpRecord) {
             throw new ForbiddenException('OTP not found or expired');

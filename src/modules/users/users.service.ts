@@ -118,6 +118,9 @@ export class UsersService extends BaseService<User> {
                 status: OtpStatus.PENDING,
                 active: true,
             },
+            order: {
+                createdAt: -1,
+            },
         });
 
         if (!otpEntity) {
