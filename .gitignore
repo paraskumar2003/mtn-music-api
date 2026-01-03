@@ -135,3 +135,6 @@ build
 .yarn/install-state.gz
 
 .pnp.*
+
+
+.trash
