@@ -1,7 +1,4 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
 import { Otp } from './entities/otp.entity';
 import { IdempotencyModule } from 'src/idempotency/key-guard/idempotency.module';
 import { MongoUsersController } from './controllers/mongo-user.controller';
@@ -12,7 +9,6 @@ import { OtpSchema } from './schema/otp.schema';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([User, Otp]),
         IdempotencyModule,
         MongooseModule.forFeature([
             { name: MongoUser.name, schema: MongoUserSchema },
@@ -20,7 +16,7 @@ import { OtpSchema } from './schema/otp.schema';
         ]),
     ],
     controllers: [MongoUsersController],
-    providers: [UsersService, MongoUsersService],
-    exports: [UsersService, MongoUsersService],
+    providers: [MongoUsersService],
+    exports: [MongoUsersService],
 })
 export class UsersModule {}
