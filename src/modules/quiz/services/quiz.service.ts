@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Quiz, QuizDocument } from '../entities/quiz.schema';
@@ -29,6 +33,8 @@ export class QuizService {
         private readonly eventEmitter: EventEmitter2,
         private readonly logger: CustomLoggerService,
     ) {}
+
+    private readonly timerInSeconds = 60 * 3;
 
     /** 🎯 Initiate quiz — send one question to user */
     async initiateQuiz(user_id: string) {
@@ -66,6 +72,7 @@ export class QuizService {
                 dimension: question[0].dimension,
                 level: question[0].level,
                 question_type: question[0].question_type,
+                timer_in_seconds: this.timerInSeconds,
             },
         };
     }
@@ -85,6 +92,20 @@ export class QuizService {
             question: new Types.ObjectId(question_id),
             user: new Types.ObjectId(user_id),
         });
+
+        /** check if this question was created 3 minutes ago or more, if not throw bad request exception - 'You must wait atleast 3 minutes to answer this question' */
+        if (submittedQuestion && submittedQuestion.created_at) {
+            const createdAt = submittedQuestion.created_at.getTime();
+            const currentTime = Date.now();
+            const timeDiff = currentTime - createdAt;
+            const timeDiffInMinutes = timeDiff / (1000 * 60);
+
+            if (timeDiffInMinutes < this.timerInSeconds / 60) {
+                throw new BadRequestException(
+                    'You must wait atleast 3 minutes to answer this question',
+                );
+            }
+        }
 
         if (!submittedQuestion)
             throw new NotFoundException('Question not found in quiz');
@@ -149,8 +170,19 @@ export class QuizService {
         await submittedQuestion.save();
         await quiz.save();
 
+        /** find all submittedquestions for this quiz */
+        const submittedQuestions = await this.submittedQuestionModel.find({
+            quiz: new Types.ObjectId(quiz_id),
+        });
+
+        let alreadyAskedQuestionIds = submittedQuestions.map(q =>
+            q.question._id.toString(),
+        );
+
         let nextQuestion = await this.questionModel.findOne({
-            _id: { $ne: question_id },
+            _id: {
+                $nin: alreadyAskedQuestionIds,
+            },
         });
 
         return {
@@ -167,9 +199,11 @@ export class QuizService {
                       dimension: nextQuestion.dimension,
                       level: nextQuestion.level,
                       question_type: nextQuestion.question_type,
+                      timer_in_seconds: this.timerInSeconds,
                   }
                 : {},
             is_last_question: !!!nextQuestion,
+            remaining_questions: 15 - alreadyAskedQuestionIds.length,
         };
     }
 
