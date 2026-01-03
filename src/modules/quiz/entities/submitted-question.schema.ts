@@ -71,6 +71,19 @@ export class SubmittedQuestion extends BaseSchema {
 
     @Prop({ required: false, type: SchemaTypes.Mixed })
     err_while_evaluation_by_llm: any;
+
+    /** scores by category */
+    @Prop({ required: false })
+    visual?: number;
+
+    @Prop({ required: false })
+    auditory?: number;
+
+    @Prop({ required: false })
+    rhythmic?: number;
+
+    @Prop({ required: false })
+    subconscious?: number;
 }
 
 export const SubmittedQuestionSchema =

@@ -8,8 +8,13 @@ import {
     ResponseType,
 } from '../entities/question.schema';
 import { AnswerQuestionDto } from '../dto/submit-answer.dto';
-import { SubmittedQuestion } from '../entities/submitted-question.schema';
+import {
+    SubmittedQuestion,
+    SubmittedQuestionDocument,
+} from '../entities/submitted-question.schema';
 import { AIService } from 'src/modules/ai/ai.service';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { CustomLoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class QuizService {
@@ -21,6 +26,8 @@ export class QuizService {
         @InjectModel(SubmittedQuestion.name)
         private submittedQuestionModel: Model<SubmittedQuestion>,
         private readonly aiService: AIService,
+        private readonly eventEmitter: EventEmitter2,
+        private readonly logger: CustomLoggerService,
     ) {}
 
     /** 🎯 Initiate quiz — send one question to user */
@@ -85,11 +92,6 @@ export class QuizService {
         if (submittedQuestion.answered_at)
             throw new NotFoundException('Question already answered');
 
-        // Initialize scores
-        let score = 0;
-        let is_evaluated_by_llm = false;
-        let confidence_score = 0;
-        let reason = '';
         const dimensionImpacts: Record<string, number> = {};
 
         // ✅ 1. Check rubric-based scoring
@@ -98,7 +100,7 @@ export class QuizService {
                 // Find matching rubric rule(s)
                 for (const rule of question.rubric) {
                     if (rule.options.includes(answer)) {
-                        score += rule.score;
+                        // score += rule.score;
 
                         // Update dimension-wise score map
                         if (!dimensionImpacts[rule.dimension]) {
@@ -109,25 +111,20 @@ export class QuizService {
                 }
             } else {
                 // ✅ 2. Fallback to simple correct/incorrect check if rubric not defined
-                score = 1;
             }
         } else {
             // ✅ 3. Fallback to ai answer from ai service
-            const aiResponse = await this.aiService.analyseAnswer(
+
+            /** instead of api call, use event emitter to process just it time but non-blocking */
+            this.eventEmitter.emit('ai.evaluateAnswer', {
                 question,
                 answer,
-            );
-
-            score = aiResponse?.is_correct ? 1 : 0;
-            is_evaluated_by_llm = true;
-            confidence_score = aiResponse?.confidence_score || 0;
-            reason = aiResponse?.reason || '';
-            submittedQuestion.err_while_evaluation_by_llm =
-                aiResponse?.is_error || null;
+                submittedQuestion,
+            });
         }
 
         // ✅ 3. Update total score
-        quiz.total_score += score;
+        // quiz.total_score += score;
 
         //  4. Update submittted question
         if (
@@ -146,15 +143,8 @@ export class QuizService {
             submittedQuestion.response_image_url = answer;
         }
 
-        submittedQuestion.score = score;
-        submittedQuestion.answered_at = new Date();
-        submittedQuestion.is_correct = score > 0;
         submittedQuestion.dimension = question.dimension;
-
-        /** Update LLM evaluation details */
-        submittedQuestion.is_evaluated_by_llm = is_evaluated_by_llm;
-        submittedQuestion.confidence_score = confidence_score;
-        submittedQuestion.reason = reason;
+        submittedQuestion.answered_at = new Date();
 
         await submittedQuestion.save();
         await quiz.save();
@@ -164,8 +154,8 @@ export class QuizService {
         });
 
         return {
-            message: score > 0 ? '✅ Correct answer!' : '❌ Wrong answer!',
-            added_score: score,
+            message: 'Answer Submitted',
+            added_score: null,
             total_score: quiz.total_score,
             nextQuestion: nextQuestion
                 ? {
@@ -181,5 +171,57 @@ export class QuizService {
                 : {},
             is_last_question: !!!nextQuestion,
         };
+    }
+
+    @OnEvent('ai.evaluateAnswer')
+    async handleAiEvaluateAnswerEvent({
+        question,
+        answer,
+        submittedQuestion,
+    }: {
+        question: QuestionDocument;
+        answer: string;
+        submittedQuestion: SubmittedQuestionDocument; // contains _id
+    }) {
+        // 1️⃣ Fetch the latest submitted question from DB
+        const submittedQuestionDoc = await this.submittedQuestionModel.findById(
+            submittedQuestion._id,
+        );
+
+        if (!submittedQuestionDoc) {
+            this.logger.error(
+                'SUBMITTED_QUESTION_NOT_FOUND',
+                submittedQuestion._id.toString(),
+                {
+                    submittedQuestionId: submittedQuestion._id,
+                },
+            );
+            return;
+        }
+
+        // 2️⃣ Call AI evaluation
+        const aiResponse = await this.aiService.analyseAnswer(question, answer);
+
+        const score = aiResponse?.is_correct ? 1 : 0;
+
+        // 3️⃣ Update fields
+        submittedQuestionDoc.score = score;
+        submittedQuestionDoc.is_correct = score > 0;
+
+        submittedQuestionDoc.is_evaluated_by_llm = true;
+        submittedQuestionDoc.confidence_score =
+            aiResponse?.confidence_score || 0;
+        submittedQuestionDoc.reason = aiResponse?.reason || '';
+
+        submittedQuestionDoc.visual = aiResponse?.visual || 0;
+        submittedQuestionDoc.auditory = aiResponse?.auditory || 0;
+        submittedQuestionDoc.rhythmic = aiResponse?.rhythmic || 0;
+        submittedQuestionDoc.subconscious = aiResponse?.subconscious || 0;
+
+        submittedQuestionDoc.err_while_evaluation_by_llm =
+            aiResponse?.is_error || null;
+
+        // 4️⃣ Persist
+        await submittedQuestionDoc.save();
     }
 }

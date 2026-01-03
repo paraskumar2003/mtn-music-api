@@ -15,6 +15,7 @@ import { AllExceptionsFilter } from './common/filters/exception.filter';
 import { QuizModule } from './modules/quiz/quiz.module';
 import { AiModule } from './modules/ai/ai.module';
 import { JwtStrategy } from './auth/strategies/jwt.strategy';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
     imports: [
@@ -40,6 +41,7 @@ import { JwtStrategy } from './auth/strategies/jwt.strategy';
             inject: [ConfigService],
             useFactory: getMongoConfig,
         }),
+        EventEmitterModule.forRoot(),
         MongoUsersModule,
         UsersModule,
         QuizModule,

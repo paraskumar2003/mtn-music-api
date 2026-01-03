@@ -1,7 +1,7 @@
 import { CustomLoggerService } from 'src/logger/logger.service';
 import { QuestionDocument } from '../quiz/entities/question.schema';
 import { v4 } from 'uuid';
-import axios from 'axios';
+// import axios from 'axios';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 
 @Injectable()
@@ -20,6 +20,10 @@ export class AIService implements OnModuleInit {
         reason: string;
         is_correct: boolean;
         is_error?: any;
+        visual: number;
+        auditory: number;
+        rhythmic: number;
+        subconscious: number;
     }> {
         const journeyId = v4();
 
@@ -46,21 +50,33 @@ export class AIService implements OnModuleInit {
         };
 
         try {
-            const res = await axios.post(config.url, config.body, {
-                headers: config.headers,
-            });
+            // const res = await axios.post(config.url, config.body, {
+            //     headers: config.headers,
+            // });
 
-            this.logger.info('ANALYSING_ANSWER_SUCCESS', journeyId, {
-                result: res.data,
-                config,
-            });
+            // this.logger.info('ANALYSING_ANSWER_SUCCESS', journeyId, {
+            //     result: res.data,
+            //     config,
+            // });
 
-            let result = res.data;
+            let result = {
+                confidence_score: 0.6,
+                reason: '',
+                is_correct: false,
+                visual: 8,
+                auditory: 7,
+                rhythmic: 6,
+                subconscious: 5,
+            };
 
             return {
-                confidence_score: result.confidence,
+                confidence_score: result.confidence_score,
                 reason: result.reason,
                 is_correct: result.is_correct,
+                visual: result.visual,
+                auditory: result.auditory,
+                rhythmic: result.rhythmic,
+                subconscious: result.subconscious,
             };
         } catch (err) {
             this.logger.error('ERROR_WHILE_ANALYSING_ANSWER', journeyId, {
@@ -72,10 +88,13 @@ export class AIService implements OnModuleInit {
             });
 
             return {
+                confidence_score: 0.6,
+                reason: '',
                 is_correct: false,
-                is_error: err,
-                confidence_score: 0,
-                reason: err.message,
+                visual: 8,
+                auditory: 7,
+                rhythmic: 6,
+                subconscious: 5,
             };
         }
     }
