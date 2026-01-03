@@ -14,6 +14,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { AllExceptionsFilter } from './common/filters/exception.filter';
 import { QuizModule } from './modules/quiz/quiz.module';
 import { AiModule } from './modules/ai/ai.module';
+import { JwtStrategy } from './auth/strategies/jwt.strategy';
 
 @Module({
     imports: [
@@ -48,7 +49,12 @@ import { AiModule } from './modules/ai/ai.module';
         RedisModule,
         S3Module,
     ],
-    providers: [AppService, TransformInterceptor, AllExceptionsFilter],
+    providers: [
+        AppService,
+        TransformInterceptor,
+        AllExceptionsFilter,
+        JwtStrategy,
+    ],
     exports: [AppService],
 })
 export class AppModule {}
