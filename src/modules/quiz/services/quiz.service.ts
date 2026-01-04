@@ -2,6 +2,7 @@ import {
     BadRequestException,
     Injectable,
     NotFoundException,
+    OnModuleInit,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -19,9 +20,15 @@ import {
 import { AIService } from 'src/modules/ai/ai.service';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { CustomLoggerService } from 'src/logger/logger.service';
+import { ConfigService } from '@nestjs/config';
+import { v4 } from 'uuid';
+import { MongoUsersService } from 'src/modules/users/services/mongo-user.service';
+import { ReportPdfService } from './report.pdf.service';
 
 @Injectable()
-export class QuizService {
+export class QuizService implements OnModuleInit {
+    private totalNoOfQuestionToBeAsked: number;
+
     constructor(
         @InjectModel(Quiz.name)
         private quizModel: Model<QuizDocument>,
@@ -32,9 +39,47 @@ export class QuizService {
         private readonly aiService: AIService,
         private readonly eventEmitter: EventEmitter2,
         private readonly logger: CustomLoggerService,
-    ) {}
+        private readonly configService: ConfigService,
+        private readonly userService: MongoUsersService,
+        private readonly reportPdfService: ReportPdfService,
+    ) {
+        this.totalNoOfQuestionToBeAsked = +this.configService.get<number>(
+            'NO_OF_QUESTIONS_TO_BE_ASKED',
+        );
+
+        if (!this.totalNoOfQuestionToBeAsked) {
+            throw new Error(
+                'NO_OF_QUESTIONS_TO_BE_ASKED is not defined in .env or is not a number',
+            );
+        }
+    }
 
     private readonly timerInSeconds = 60 * 3;
+
+    private calculateAverage(
+        key: 'visual' | 'auditory' | 'rhythmic' | 'subconscious',
+        questions: any[],
+    ) {
+        const total = questions.reduce(
+            (acc, cur) => {
+                acc.score += cur[key];
+                acc.confidence += cur.confidence_score;
+                return acc;
+            },
+            { score: 0, confidence: 0 },
+        );
+
+        const count = questions.length;
+
+        return {
+            score: total.score / count,
+            confidence: total.confidence / count,
+        };
+    }
+
+    async onModuleInit() {
+        console.log('EVENT_FIRED');
+    }
 
     /** 🎯 Initiate quiz — send one question to user */
     async initiateQuiz(user_id: string) {
@@ -185,6 +230,28 @@ export class QuizService {
             },
         });
 
+        // Create a submitted question entry
+        if (nextQuestion)
+            await this.submittedQuestionModel.create({
+                quiz: quiz._id,
+                question: nextQuestion._id,
+                user: new Types.ObjectId(user_id),
+                dimension: nextQuestion.dimension,
+            });
+
+        /** if no. of question already asked + 1 is 15 then, mark this as last question */
+
+        /** emit report-mail event */
+        if (
+            alreadyAskedQuestionIds.length + 1 ===
+            this.totalNoOfQuestionToBeAsked
+        ) {
+            this.eventEmitter.emit('quiz.report.sendMail', {
+                quiz_id,
+                user_id,
+            });
+        }
+
         return {
             message: 'Answer Submitted',
             added_score: null,
@@ -203,7 +270,10 @@ export class QuizService {
                   }
                 : {},
             is_last_question: !!!nextQuestion,
-            remaining_questions: 15 - alreadyAskedQuestionIds.length,
+            remaining_questions:
+                this.totalNoOfQuestionToBeAsked -
+                alreadyAskedQuestionIds.length -
+                1,
         };
     }
 
@@ -257,5 +327,130 @@ export class QuizService {
 
         // 4️⃣ Persist
         await submittedQuestionDoc.save();
+    }
+
+    /** handle event quiz.report.sendMail */
+    @OnEvent('quiz.report.sendMail')
+    async handleQuizReport(payload: { quiz_id: string; user_id: string }) {
+        const journeyId = v4();
+
+        this.logger.info('QUIZ.REPORT.SENDMAIL event received', journeyId, {
+            quiz_id: payload.quiz_id,
+            user_id: payload.user_id,
+        });
+
+        try {
+            /** all we need is 
+             * 
+             * 
+             * {
+            name: 'Paras Kumar',
+            email: 'paras.kumar@example.com',
+            role: 'Software Engineer',
+            age_range: '22–30',
+            test_duration: 18,
+            report_date: '06 Jan 2026',
+
+            top_profile: 'Visual–Strategic Thinker',
+            confidence: 'High (87%)',
+
+            mix_visual: 42,
+            mix_auditory: 18,
+            mix_rhythmic: 25,
+            mix_subconscious: 15,
+        }
+             */
+
+            let user = await this.userService.getUserDetailsByUserId(
+                payload.user_id,
+            );
+
+            if (!user) {
+                this.logger.info(
+                    'USER_DETAILS_NOT_FOUND_WHILE_REPORT_GENERATION',
+                    journeyId,
+                    { payload },
+                );
+            }
+
+            /** find all answered questions */
+            let submittedQuestions = await this.submittedQuestionModel.find({
+                quiz: new Types.ObjectId(payload.quiz_id),
+            });
+
+            if (!submittedQuestions || submittedQuestions.length === 0) {
+                this.logger.info(
+                    'NO_ANSWERED_QUESTIONS_FOUND_WHILE_REPORT_GENERATION',
+                    journeyId,
+                    { payload },
+                );
+            }
+
+            /** find average of all four parameters */
+
+            const visualAvg = this.calculateAverage(
+                'visual',
+                submittedQuestions,
+            );
+            const auditoryAvg = this.calculateAverage(
+                'auditory',
+                submittedQuestions,
+            );
+            const rhythmicAvg = this.calculateAverage(
+                'rhythmic',
+                submittedQuestions,
+            );
+            const subconsciousAvg = this.calculateAverage(
+                'subconscious',
+                submittedQuestions,
+            );
+
+            const dimensions = {
+                visual: visualAvg.score,
+                auditory: auditoryAvg.score,
+                rhythmic: rhythmicAvg.score,
+                subconscious: subconsciousAvg.score,
+            };
+
+            const dominantDimension = Object.entries(dimensions).reduce(
+                (dominant, current) => {
+                    const [key, value] = current;
+                    return value > dominant.value ? { key, value } : dominant;
+                },
+                { key: null as string | null, value: -Infinity },
+            );
+
+            let mailVariables = {
+                name: user.name,
+                email: user.email,
+                role: user.working_role,
+                age_range: user.age,
+                test_duration: submittedQuestions.length * 3,
+                report_date: new Date().toLocaleDateString('en-US', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                }),
+
+                top_profile: `${dominantDimension.key?.charAt(0).toUpperCase() + dominantDimension.key?.slice(1)} Thinker`,
+                confidence: `High (${visualAvg.confidence}%)`,
+
+                mix_visual: (visualAvg.score * 100) / submittedQuestions.length,
+                mix_auditory:
+                    (auditoryAvg.score * 100) / submittedQuestions.length,
+                mix_rhythmic:
+                    (rhythmicAvg.score * 100) / submittedQuestions.length,
+                mix_subconscious:
+                    (subconsciousAvg.score * 100) / submittedQuestions.length,
+            };
+
+            await this.reportPdfService.generatePdfAndSendMail(mailVariables);
+        } catch (err) {
+            this.logger.error('ERROR_WHILE_SENDING_QUIZ_REPORT', journeyId, {
+                message: err.message,
+                quiz_id: payload.quiz_id,
+                user_id: payload.user_id,
+            });
+        }
     }
 }

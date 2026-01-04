@@ -205,4 +205,8 @@ export class MongoUsersService {
             otp_verified: true,
         };
     }
+
+    async getUserDetailsByUserId(user_id: string) {
+        return await this.mongoUserModel.findById(user_id);
+    }
 }

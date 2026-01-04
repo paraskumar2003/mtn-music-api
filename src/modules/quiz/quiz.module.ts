@@ -9,6 +9,8 @@ import {
     SubmittedQuestionSchema,
 } from './entities/submitted-question.schema';
 import { AiModule } from '../ai/ai.module';
+import { ReportPdfService } from './services/report.pdf.service';
+import { UsersModule } from '../users/users.module';
 
 @Module({
     imports: [
@@ -21,9 +23,10 @@ import { AiModule } from '../ai/ai.module';
             },
         ]),
         AiModule,
+        UsersModule,
     ],
     controllers: [QuizController],
-    providers: [QuizService],
-    exports: [QuizService],
+    providers: [QuizService, ReportPdfService],
+    exports: [QuizService, ReportPdfService],
 })
 export class QuizModule {}

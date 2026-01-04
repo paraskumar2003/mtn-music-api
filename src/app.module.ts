@@ -16,6 +16,8 @@ import { QuizModule } from './modules/quiz/quiz.module';
 import { AiModule } from './modules/ai/ai.module';
 import { JwtStrategy } from './auth/strategies/jwt.strategy';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import * as path from 'path';
 
 @Module({
     imports: [
@@ -40,6 +42,10 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: getMongoConfig,
+        }),
+        ServeStaticModule.forRoot({
+            rootPath: path.join(process.cwd(), 'public'),
+            serveRoot: '/static',
         }),
         EventEmitterModule.forRoot(),
         MongoUsersModule,
