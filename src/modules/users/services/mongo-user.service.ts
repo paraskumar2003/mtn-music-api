@@ -209,4 +209,50 @@ export class MongoUsersService {
     async getUserDetailsByUserId(user_id: string) {
         return await this.mongoUserModel.findById(user_id);
     }
+
+    async upsertUserByEmail(params: {
+        name: string;
+        email: string;
+        mobile: string;
+        age: number;
+        role: string;
+    }): Promise<any> {
+        const { name, email, mobile, age, role } = params;
+
+        const user = await this.mongoUserModel.findOneAndUpdate(
+            { email }, // find condition
+            {
+                $set: {
+                    name,
+                    mobile,
+                    age,
+                    working_role: role,
+                    email,
+                },
+            },
+            {
+                new: true, // return updated document
+                upsert: true, // create if not exists
+                setDefaultsOnInsert: true,
+            },
+        );
+
+        const secret = this.configService.get('JWT_SECRET', 'default_secret');
+
+        const token = jwt.sign(
+            {
+                id: user._id,
+                email: user.email,
+                mobile: user.mobile,
+                roles: user.roles,
+            },
+            secret,
+            { expiresIn: '1h' },
+        );
+
+        return {
+            access_token: token,
+            otp_verified: true,
+        };
+    }
 }
