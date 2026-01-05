@@ -56,4 +56,12 @@ export class MongoUsersController {
             'http://localhost:5173/open-window?access_token=' + access_token,
         );
     }
+
+    @Get('verify-token')
+    async verifyToken(@Query('access_token') access_token: string) {
+        const result = await this.mongoUsersService.verifyToken(access_token);
+        return {
+            token_verified: result.token_verified,
+        };
+    }
 }

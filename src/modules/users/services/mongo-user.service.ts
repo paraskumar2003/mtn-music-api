@@ -255,4 +255,19 @@ export class MongoUsersService {
             otp_verified: true,
         };
     }
+
+    async verifyToken(access_token: string) {
+        const secret = this.configService.get('JWT_SECRET', 'default_secret');
+
+        try {
+            const decoded = jwt.verify(access_token, secret) as jwt.JwtPayload;
+            return {
+                token_verified: !!decoded,
+            };
+        } catch (error) {
+            return {
+                token_verified: false,
+            };
+        }
+    }
 }
