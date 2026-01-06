@@ -3,6 +3,7 @@ import { QuestionDocument } from '../quiz/entities/question.schema';
 import { v4 } from 'uuid';
 // import axios from 'axios';
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import axios from 'axios';
 
 @Injectable()
 export class AIService implements OnModuleInit {
@@ -28,7 +29,7 @@ export class AIService implements OnModuleInit {
         const journeyId = v4();
 
         let config = {
-            url: 'http://13.232.220.47/api/py/question',
+            url: 'http://65.1.91.197:8000/api/py/question',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -50,24 +51,16 @@ export class AIService implements OnModuleInit {
         };
 
         try {
-            // const res = await axios.post(config.url, config.body, {
-            //     headers: config.headers,
-            // });
+            const res = await axios.post(config.url, config.body, {
+                headers: config.headers,
+            });
 
-            // this.logger.info('ANALYSING_ANSWER_SUCCESS', journeyId, {
-            //     result: res.data,
-            //     config,
-            // });
+            this.logger.info('ANALYSING_ANSWER_SUCCESS', journeyId, {
+                result: res.data,
+                config,
+            });
 
-            let result = {
-                confidence_score: 0.6,
-                reason: '',
-                is_correct: false,
-                visual: 8,
-                auditory: 7,
-                rhythmic: 6,
-                subconscious: 5,
-            };
+            let result = res.data;
 
             return {
                 confidence_score: result.confidence_score,
