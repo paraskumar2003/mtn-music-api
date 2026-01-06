@@ -13,6 +13,7 @@ exports.AIService = void 0;
 const logger_service_1 = require("../../logger/logger.service");
 const uuid_1 = require("uuid");
 const common_1 = require("@nestjs/common");
+const axios_1 = require("axios");
 let AIService = class AIService {
     constructor(logger) {
         this.logger = logger;
@@ -23,7 +24,7 @@ let AIService = class AIService {
     async analyseAnswer(question, file_url) {
         const journeyId = (0, uuid_1.v4)();
         let config = {
-            url: 'http://13.232.220.47/api/py/question',
+            url: 'http://65.1.91.197:8000/api/py/question',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -44,15 +45,14 @@ let AIService = class AIService {
             },
         };
         try {
-            let result = {
-                confidence_score: 0.6,
-                reason: '',
-                is_correct: false,
-                visual: 8,
-                auditory: 7,
-                rhythmic: 6,
-                subconscious: 5,
-            };
+            const res = await axios_1.default.post(config.url, config.body, {
+                headers: config.headers,
+            });
+            this.logger.info('ANALYSING_ANSWER_SUCCESS', journeyId, {
+                result: res.data,
+                config,
+            });
+            let result = res.data;
             return {
                 confidence_score: result.confidence_score,
                 reason: result.reason,
