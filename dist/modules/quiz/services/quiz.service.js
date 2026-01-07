@@ -37,7 +37,7 @@ let QuizService = class QuizService {
         this.configService = configService;
         this.userService = userService;
         this.reportPdfService = reportPdfService;
-        this.timerInSeconds = 60;
+        this.timerInSeconds = 60 * 3;
         this.totalNoOfQuestionToBeAsked = +this.configService.get('NO_OF_QUESTIONS_TO_BE_ASKED');
         if (!this.totalNoOfQuestionToBeAsked) {
             throw new Error('NO_OF_QUESTIONS_TO_BE_ASKED is not defined in .env or is not a number');
