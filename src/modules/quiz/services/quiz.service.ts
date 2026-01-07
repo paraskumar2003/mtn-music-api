@@ -54,7 +54,7 @@ export class QuizService implements OnModuleInit {
         }
     }
 
-    private readonly timerInSeconds = 60;
+    private readonly timerInSeconds = 60 * 3;
 
     private calculateAverage(
         key: 'visual' | 'auditory' | 'rhythmic' | 'subconscious',
