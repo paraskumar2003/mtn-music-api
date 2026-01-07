@@ -1,7 +1,6 @@
 import { CustomLoggerService } from 'src/logger/logger.service';
 import { QuestionDocument } from '../quiz/entities/question.schema';
 import { v4 } from 'uuid';
-// import axios from 'axios';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
 

