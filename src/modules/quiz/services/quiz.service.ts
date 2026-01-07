@@ -54,7 +54,7 @@ export class QuizService implements OnModuleInit {
         }
     }
 
-    private readonly timerInSeconds = 60 * 3;
+    private readonly timerInSeconds = 60;
 
     private calculateAverage(
         key: 'visual' | 'auditory' | 'rhythmic' | 'subconscious',
@@ -240,11 +240,13 @@ export class QuizService implements OnModuleInit {
             });
 
         /** if no. of question already asked + 1 is 15 then, mark this as last question */
+        /** calculate the total number of questions in the collection */
+        const totalNoOfQuestions = await this.questionModel.countDocuments();
 
         /** emit report-mail event */
         if (
             alreadyAskedQuestionIds.length + 1 ===
-            this.totalNoOfQuestionToBeAsked
+            Math.min(this.totalNoOfQuestionToBeAsked, totalNoOfQuestions)
         ) {
             this.eventEmitter.emit('quiz.report.sendMail', {
                 quiz_id,
@@ -271,7 +273,7 @@ export class QuizService implements OnModuleInit {
                 : {},
             is_last_question: !!!nextQuestion,
             remaining_questions:
-                this.totalNoOfQuestionToBeAsked -
+                Math.min(this.totalNoOfQuestionToBeAsked, totalNoOfQuestions) -
                 alreadyAskedQuestionIds.length -
                 1,
         };

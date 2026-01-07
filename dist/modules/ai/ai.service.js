@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AIService = void 0;
 const logger_service_1 = require("../../logger/logger.service");
+const question_schema_1 = require("../quiz/entities/question.schema");
 const uuid_1 = require("uuid");
 const common_1 = require("@nestjs/common");
 const axios_1 = require("axios");
@@ -39,8 +40,12 @@ let AIService = class AIService {
                     audio_url: question.audio_url,
                     options: question.options,
                     response_type: question.question_type,
-                    response_file_url: file_url,
-                    response_text: question.answer,
+                    response_file_url: question.question_type !== question_schema_1.ResponseType.TEXT
+                        ? file_url
+                        : '',
+                    response_text: question.question_type === question_schema_1.ResponseType.TEXT
+                        ? file_url
+                        : '',
                 },
             },
         };

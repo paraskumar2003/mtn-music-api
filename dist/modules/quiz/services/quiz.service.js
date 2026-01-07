@@ -37,7 +37,7 @@ let QuizService = class QuizService {
         this.configService = configService;
         this.userService = userService;
         this.reportPdfService = reportPdfService;
-        this.timerInSeconds = 60 * 3;
+        this.timerInSeconds = 60;
         this.totalNoOfQuestionToBeAsked = +this.configService.get('NO_OF_QUESTIONS_TO_BE_ASKED');
         if (!this.totalNoOfQuestionToBeAsked) {
             throw new Error('NO_OF_QUESTIONS_TO_BE_ASKED is not defined in .env or is not a number');
@@ -168,8 +168,9 @@ let QuizService = class QuizService {
                 user: new mongoose_2.Types.ObjectId(user_id),
                 dimension: nextQuestion.dimension,
             });
+        const totalNoOfQuestions = await this.questionModel.countDocuments();
         if (alreadyAskedQuestionIds.length + 1 ===
-            this.totalNoOfQuestionToBeAsked) {
+            Math.min(this.totalNoOfQuestionToBeAsked, totalNoOfQuestions)) {
             this.eventEmitter.emit('quiz.report.sendMail', {
                 quiz_id,
                 user_id,
@@ -193,7 +194,7 @@ let QuizService = class QuizService {
                 }
                 : {},
             is_last_question: !!!nextQuestion,
-            remaining_questions: this.totalNoOfQuestionToBeAsked -
+            remaining_questions: Math.min(this.totalNoOfQuestionToBeAsked, totalNoOfQuestions) -
                 alreadyAskedQuestionIds.length -
                 1,
         };

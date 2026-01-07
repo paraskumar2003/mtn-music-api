@@ -1,5 +1,8 @@
 import { CustomLoggerService } from 'src/logger/logger.service';
-import { QuestionDocument } from '../quiz/entities/question.schema';
+import {
+    QuestionDocument,
+    ResponseType,
+} from '../quiz/entities/question.schema';
 import { v4 } from 'uuid';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
@@ -43,8 +46,14 @@ export class AIService implements OnModuleInit {
                     audio_url: question.audio_url,
                     options: question.options,
                     response_type: question.question_type,
-                    response_file_url: file_url,
-                    response_text: question.answer,
+                    response_file_url:
+                        question.question_type !== ResponseType.TEXT
+                            ? file_url
+                            : '',
+                    response_text:
+                        question.question_type === ResponseType.TEXT
+                            ? file_url
+                            : '',
                 },
             },
         };
