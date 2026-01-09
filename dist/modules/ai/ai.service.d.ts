@@ -1,10 +1,8 @@
 import { CustomLoggerService } from 'src/logger/logger.service';
 import { QuestionDocument } from '../quiz/entities/question.schema';
-import { OnModuleInit } from '@nestjs/common';
-export declare class AIService implements OnModuleInit {
+export declare class AIService {
     private readonly logger;
     constructor(logger: CustomLoggerService);
-    onModuleInit(): void;
     analyseAnswer(question: QuestionDocument, file_url: string): Promise<{
         confidence_score: number;
         reason: string;

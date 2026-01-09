@@ -19,9 +19,6 @@ let AIService = class AIService {
     constructor(logger) {
         this.logger = logger;
     }
-    onModuleInit() {
-        this.logger.info('AI_SERVICE_INITIALIZED', String(Date.now()), {});
-    }
     async analyseAnswer(question, file_url) {
         const journeyId = (0, uuid_1.v4)();
         let config = {
@@ -59,7 +56,7 @@ let AIService = class AIService {
             });
             let result = res.data;
             return {
-                confidence_score: result.confidence_score,
+                confidence_score: Math.floor(result.confidence),
                 reason: result.reason,
                 is_correct: result.is_correct,
                 visual: result.visual,

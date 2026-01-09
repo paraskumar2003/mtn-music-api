@@ -54,7 +54,7 @@ export class QuizService implements OnModuleInit {
         }
     }
 
-    private readonly timerInSeconds = 60 * 3;
+    private readonly timerInSeconds = 60 * 1;
 
     private calculateAverage(
         key: 'visual' | 'auditory' | 'rhythmic' | 'subconscious',
@@ -78,7 +78,7 @@ export class QuizService implements OnModuleInit {
     }
 
     async onModuleInit() {
-        console.log('EVENT_FIRED');
+        // console.log('EVENT_FIRED');
     }
 
     /** 🎯 Initiate quiz — send one question to user */
@@ -435,15 +435,20 @@ export class QuizService implements OnModuleInit {
                 }),
 
                 top_profile: `${dominantDimension.key?.charAt(0).toUpperCase() + dominantDimension.key?.slice(1)} Thinker`,
-                confidence: `High (${visualAvg.confidence}%)`,
+                confidence: `High (${Math.floor(visualAvg.confidence * 100)}%)`,
 
-                mix_visual: (visualAvg.score * 100) / submittedQuestions.length,
-                mix_auditory:
+                mix_visual: Math.floor(
+                    (visualAvg.score * 100) / submittedQuestions.length,
+                ),
+                mix_auditory: Math.floor(
                     (auditoryAvg.score * 100) / submittedQuestions.length,
-                mix_rhythmic:
+                ),
+                mix_rhythmic: Math.floor(
                     (rhythmicAvg.score * 100) / submittedQuestions.length,
-                mix_subconscious:
+                ),
+                mix_subconscious: Math.floor(
                     (subconsciousAvg.score * 100) / submittedQuestions.length,
+                ),
             };
 
             await this.reportPdfService.generatePdfAndSendMail(mailVariables);

@@ -4,16 +4,12 @@ import {
     ResponseType,
 } from '../quiz/entities/question.schema';
 import { v4 } from 'uuid';
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 
 @Injectable()
-export class AIService implements OnModuleInit {
+export class AIService {
     constructor(private readonly logger: CustomLoggerService) {}
-
-    onModuleInit() {
-        this.logger.info('AI_SERVICE_INITIALIZED', String(Date.now()), {});
-    }
 
     async analyseAnswer(
         question: QuestionDocument,
@@ -71,7 +67,7 @@ export class AIService implements OnModuleInit {
             let result = res.data;
 
             return {
-                confidence_score: result.confidence_score,
+                confidence_score: Math.floor(result.confidence),
                 reason: result.reason,
                 is_correct: result.is_correct,
                 visual: result.visual,

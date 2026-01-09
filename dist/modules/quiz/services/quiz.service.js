@@ -37,7 +37,7 @@ let QuizService = class QuizService {
         this.configService = configService;
         this.userService = userService;
         this.reportPdfService = reportPdfService;
-        this.timerInSeconds = 60 * 3;
+        this.timerInSeconds = 60 * 1;
         this.totalNoOfQuestionToBeAsked = +this.configService.get('NO_OF_QUESTIONS_TO_BE_ASKED');
         if (!this.totalNoOfQuestionToBeAsked) {
             throw new Error('NO_OF_QUESTIONS_TO_BE_ASKED is not defined in .env or is not a number');
@@ -56,7 +56,6 @@ let QuizService = class QuizService {
         };
     }
     async onModuleInit() {
-        console.log('EVENT_FIRED');
     }
     async initiateQuiz(user_id) {
         const question = await this.questionModel.aggregate([
@@ -266,11 +265,11 @@ let QuizService = class QuizService {
                     year: 'numeric',
                 }),
                 top_profile: `${dominantDimension.key?.charAt(0).toUpperCase() + dominantDimension.key?.slice(1)} Thinker`,
-                confidence: `High (${visualAvg.confidence}%)`,
-                mix_visual: (visualAvg.score * 100) / submittedQuestions.length,
-                mix_auditory: (auditoryAvg.score * 100) / submittedQuestions.length,
-                mix_rhythmic: (rhythmicAvg.score * 100) / submittedQuestions.length,
-                mix_subconscious: (subconsciousAvg.score * 100) / submittedQuestions.length,
+                confidence: `High (${Math.floor(visualAvg.confidence * 100)}%)`,
+                mix_visual: Math.floor((visualAvg.score * 100) / submittedQuestions.length),
+                mix_auditory: Math.floor((auditoryAvg.score * 100) / submittedQuestions.length),
+                mix_rhythmic: Math.floor((rhythmicAvg.score * 100) / submittedQuestions.length),
+                mix_subconscious: Math.floor((subconsciousAvg.score * 100) / submittedQuestions.length),
             };
             await this.reportPdfService.generatePdfAndSendMail(mailVariables);
         }
