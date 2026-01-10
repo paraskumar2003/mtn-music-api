@@ -59,10 +59,10 @@ let QuizService = class QuizService {
         console.log('EVENT_FIRED');
     }
     async initiateQuiz(user_id) {
-        const question = await this.questionModel.aggregate([
-            { $sample: { size: 1 }, $sort: { seq_no: 1 } },
-        ]);
-        if (!question.length)
+        const question = await this.questionModel
+            .findOne({})
+            .sort({ seq_no: 1 });
+        if (!question)
             throw new common_1.NotFoundException('No questions available');
         const createdQuiz = await this.quizModel.create({
             user: new mongoose_2.Types.ObjectId(user_id),
@@ -71,22 +71,22 @@ let QuizService = class QuizService {
         });
         await this.submittedQuestionModel.create({
             quiz: createdQuiz._id,
-            question: question[0]._id,
+            question: question._id,
             user: new mongoose_2.Types.ObjectId(user_id),
-            dimension: question[0].dimension,
+            dimension: question.dimension,
         });
         return {
             message: '✅ Quiz started successfully',
             quiz_id: createdQuiz._id.toString(),
             question: {
-                question_id: question[0]._id.toString(),
-                prompt_html: question[0].prompt_html,
-                image_url: question[0].image_url,
-                audio_url: question[0].audio_url,
-                options: question[0].options,
-                dimension: question[0].dimension,
-                level: question[0].level,
-                question_type: question[0].question_type,
+                question_id: question._id.toString(),
+                prompt_html: question.prompt_html,
+                image_url: question.image_url,
+                audio_url: question.audio_url,
+                options: question.options,
+                dimension: question.dimension,
+                level: question.level,
+                question_type: question.question_type,
                 timer_in_seconds: this.timerInSeconds,
             },
         };

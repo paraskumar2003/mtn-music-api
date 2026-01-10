@@ -29,14 +29,14 @@ export declare class QuizService implements OnModuleInit {
         message: string;
         quiz_id: string;
         question: {
-            question_id: any;
-            prompt_html: any;
-            image_url: any;
-            audio_url: any;
-            options: any;
-            dimension: any;
-            level: any;
-            question_type: any;
+            question_id: string;
+            prompt_html: string;
+            image_url: string;
+            audio_url: string;
+            options: string[];
+            dimension: string;
+            level: string;
+            question_type: ResponseType;
             timer_in_seconds: number;
         };
     }>;

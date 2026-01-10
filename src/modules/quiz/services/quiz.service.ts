@@ -84,12 +84,11 @@ export class QuizService implements OnModuleInit {
     /** 🎯 Initiate quiz — send one question to user */
     async initiateQuiz(user_id: string) {
         // Pick a random question
-        const question = await this.questionModel.aggregate([
-            { $sample: { size: 1 }, $sort: { seq_no: 1 } },
-        ]);
+        const question = await this.questionModel
+            .findOne({})
+            .sort({ seq_no: 1 });
 
-        if (!question.length)
-            throw new NotFoundException('No questions available');
+        if (!question) throw new NotFoundException('No questions available');
 
         const createdQuiz = await this.quizModel.create({
             user: new Types.ObjectId(user_id),
@@ -100,23 +99,23 @@ export class QuizService implements OnModuleInit {
         // Create a submitted question entry
         await this.submittedQuestionModel.create({
             quiz: createdQuiz._id,
-            question: question[0]._id,
+            question: question._id,
             user: new Types.ObjectId(user_id),
-            dimension: question[0].dimension,
+            dimension: question.dimension,
         });
 
         return {
             message: '✅ Quiz started successfully',
             quiz_id: createdQuiz._id.toString(),
             question: {
-                question_id: question[0]._id.toString(),
-                prompt_html: question[0].prompt_html,
-                image_url: question[0].image_url,
-                audio_url: question[0].audio_url,
-                options: question[0].options,
-                dimension: question[0].dimension,
-                level: question[0].level,
-                question_type: question[0].question_type,
+                question_id: question._id.toString(),
+                prompt_html: question.prompt_html,
+                image_url: question.image_url,
+                audio_url: question.audio_url,
+                options: question.options,
+                dimension: question.dimension,
+                level: question.level,
+                question_type: question.question_type,
                 timer_in_seconds: this.timerInSeconds,
             },
         };
