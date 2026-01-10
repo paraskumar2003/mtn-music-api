@@ -1,0 +1,7 @@
+{
+    "uri": "mongodb+srv://mtn_music_app_user:paras_mtnmusic_2025@miiramadhyam.u2ock.mongodb.net/mtn_music_dev",
+    "options": {},
+    "migrationsDir": "mongo_migrations",
+    "migrationsCollection": "migrations_changelog",
+    "migrationExtensions": ["ts"]
+}

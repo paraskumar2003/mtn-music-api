@@ -78,14 +78,14 @@ export class QuizService implements OnModuleInit {
     }
 
     async onModuleInit() {
-        // console.log('EVENT_FIRED');
+        console.log('EVENT_FIRED');
     }
 
     /** 🎯 Initiate quiz — send one question to user */
     async initiateQuiz(user_id: string) {
         // Pick a random question
         const question = await this.questionModel.aggregate([
-            { $sample: { size: 1 } },
+            { $sample: { size: 1 }, $sort: { seq_no: 1 } },
         ]);
 
         if (!question.length)
@@ -227,6 +227,9 @@ export class QuizService implements OnModuleInit {
         let nextQuestion = await this.questionModel.findOne({
             _id: {
                 $nin: alreadyAskedQuestionIds,
+            },
+            seq_no: {
+                $gt: question.seq_no,
             },
         });
 

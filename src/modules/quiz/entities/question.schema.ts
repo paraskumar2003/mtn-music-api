@@ -64,6 +64,9 @@ export class Question {
         note?: string;
     }[];
 
+    @Prop({ required: true, default: 0 })
+    seq_no: number;
+
     @Prop({ type: Types.ObjectId, ref: MongoUser.name, required: false })
     user: Types.ObjectId;
 
