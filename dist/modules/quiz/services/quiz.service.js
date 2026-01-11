@@ -37,7 +37,7 @@ let QuizService = class QuizService {
         this.configService = configService;
         this.userService = userService;
         this.reportPdfService = reportPdfService;
-        this.timerInSeconds = 60 * 1;
+        this.timerInSeconds = 60 * 3;
         this.totalNoOfQuestionToBeAsked = +this.configService.get('NO_OF_QUESTIONS_TO_BE_ASKED');
         if (!this.totalNoOfQuestionToBeAsked) {
             throw new Error('NO_OF_QUESTIONS_TO_BE_ASKED is not defined in .env or is not a number');
@@ -45,8 +45,8 @@ let QuizService = class QuizService {
     }
     calculateAverage(key, questions) {
         const total = questions.reduce((acc, cur) => {
-            acc.score += cur[key];
-            acc.confidence += cur.confidence_score;
+            acc.score += cur[key] ?? 0;
+            acc.confidence += cur.confidence_score ?? 0;
             return acc;
         }, { score: 0, confidence: 0 });
         const count = questions.length;
@@ -172,7 +172,7 @@ let QuizService = class QuizService {
                 dimension: nextQuestion.dimension,
             });
         const totalNoOfQuestions = await this.questionModel.countDocuments();
-        if (alreadyAskedQuestionIds.length + 1 ===
+        if (alreadyAskedQuestionIds.length ===
             Math.min(this.totalNoOfQuestionToBeAsked, totalNoOfQuestions)) {
             this.eventEmitter.emit('quiz.report.sendMail', {
                 quiz_id,
@@ -260,8 +260,8 @@ let QuizService = class QuizService {
             let mailVariables = {
                 name: user.name,
                 email: user.email,
-                role: user.working_role,
-                age_range: user.age,
+                role: user.working_role ?? 'N/A',
+                age_range: user.age ?? 'N/A',
                 test_duration: submittedQuestions.length * 3,
                 report_date: new Date().toLocaleDateString('en-US', {
                     day: '2-digit',
@@ -275,6 +275,7 @@ let QuizService = class QuizService {
                 mix_rhythmic: Math.floor((rhythmicAvg.score * 100) / submittedQuestions.length),
                 mix_subconscious: Math.floor((subconsciousAvg.score * 100) / submittedQuestions.length),
             };
+            this.logger.info('MAIL_VARIABLES', journeyId, { mailVariables });
             await this.reportPdfService.generatePdfAndSendMail(mailVariables);
         }
         catch (err) {

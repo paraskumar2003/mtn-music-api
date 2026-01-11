@@ -54,7 +54,7 @@ export class QuizService implements OnModuleInit {
         }
     }
 
-    private readonly timerInSeconds = 60 * 1;
+    private readonly timerInSeconds = 60 * 3;
 
     private calculateAverage(
         key: 'visual' | 'auditory' | 'rhythmic' | 'subconscious',
@@ -62,8 +62,8 @@ export class QuizService implements OnModuleInit {
     ) {
         const total = questions.reduce(
             (acc, cur) => {
-                acc.score += cur[key];
-                acc.confidence += cur.confidence_score;
+                acc.score += cur[key] ?? 0;
+                acc.confidence += cur.confidence_score ?? 0;
                 return acc;
             },
             { score: 0, confidence: 0 },
@@ -247,7 +247,7 @@ export class QuizService implements OnModuleInit {
 
         /** emit report-mail event */
         if (
-            alreadyAskedQuestionIds.length + 1 ===
+            alreadyAskedQuestionIds.length ===
             Math.min(this.totalNoOfQuestionToBeAsked, totalNoOfQuestions)
         ) {
             this.eventEmitter.emit('quiz.report.sendMail', {
@@ -427,8 +427,8 @@ export class QuizService implements OnModuleInit {
             let mailVariables = {
                 name: user.name,
                 email: user.email,
-                role: user.working_role,
-                age_range: user.age,
+                role: user.working_role ?? 'N/A',
+                age_range: user.age ?? 'N/A',
                 test_duration: submittedQuestions.length * 3,
                 report_date: new Date().toLocaleDateString('en-US', {
                     day: '2-digit',
@@ -452,6 +452,8 @@ export class QuizService implements OnModuleInit {
                     (subconsciousAvg.score * 100) / submittedQuestions.length,
                 ),
             };
+
+            this.logger.info('MAIL_VARIABLES', journeyId, { mailVariables });
 
             await this.reportPdfService.generatePdfAndSendMail(mailVariables);
         } catch (err) {
