@@ -174,10 +174,12 @@ let QuizService = class QuizService {
         const totalNoOfQuestions = await this.questionModel.countDocuments();
         if (alreadyAskedQuestionIds.length ===
             Math.min(this.totalNoOfQuestionToBeAsked, totalNoOfQuestions)) {
-            this.eventEmitter.emit('quiz.report.sendMail', {
-                quiz_id,
-                user_id,
-            });
+            setTimeout(() => {
+                this.eventEmitter.emit('quiz.report.sendMail', {
+                    quiz_id,
+                    user_id,
+                });
+            }, 10000);
         }
         return {
             message: 'Answer Submitted',
