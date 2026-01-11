@@ -445,7 +445,7 @@ export class QuizService implements OnModuleInit {
                 }),
 
                 top_profile: `${dominantDimension.key?.charAt(0).toUpperCase() + dominantDimension.key?.slice(1)} Thinker`,
-                confidence: `High (${Math.floor(visualAvg.confidence * 100)}%)`,
+                confidence: `High (${Math.floor(visualAvg.confidence)}%)`,
 
                 mix_visual: Math.floor(
                     (visualAvg.score * 100) / submittedQuestions.length,
