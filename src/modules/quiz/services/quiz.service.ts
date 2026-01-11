@@ -79,6 +79,12 @@ export class QuizService implements OnModuleInit {
 
     async onModuleInit() {
         console.log('EVENT_FIRED');
+        // setTimeout(() => {
+        //     this.eventEmitter.emit('quiz.report.sendMail', {
+        //         quiz_id: '69628930319a138a687d1b25',
+        //         user_id: '695d3908e563adf02cfef831',
+        //     });
+        // }, 5000);
     }
 
     /** 🎯 Initiate quiz — send one question to user */

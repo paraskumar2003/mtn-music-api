@@ -356,7 +356,7 @@ This report does not constitute a medical, psychological, or clinical diagnosis 
 
               <p style="font-size:15px; line-height:1.6; margin-bottom:0;">
                 Warm regards,<br />
-                <strong>Team Almonds</strong>
+                <strong>Team MTNP</strong>
               </p>
             </td>
           </tr>

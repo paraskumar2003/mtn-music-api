@@ -56,7 +56,7 @@ let AIService = class AIService {
             });
             let result = res.data;
             return {
-                confidence_score: Math.floor(result.confidence),
+                confidence_score: Math.floor(result.confidence * 100),
                 reason: result.reason,
                 is_correct: result.is_correct,
                 visual: result.visual,
