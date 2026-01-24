@@ -13,6 +13,7 @@ export declare class UserDetails extends BaseSchema {
     work_experience?: string;
     prior_tests_taken: boolean;
     additional_info?: Record<string, any>;
+    agreement: boolean;
 }
 export declare const UserDetailsSchema: import("mongoose").Schema<UserDetails, import("mongoose").Model<UserDetails, any, any, any, Document<unknown, any, UserDetails, any, {}> & UserDetails & Required<{
     _id: Types.ObjectId;

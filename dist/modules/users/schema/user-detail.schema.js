@@ -73,6 +73,10 @@ __decorate([
     }),
     __metadata("design:type", Object)
 ], UserDetails.prototype, "additional_info", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", Boolean)
+], UserDetails.prototype, "agreement", void 0);
 exports.UserDetails = UserDetails = __decorate([
     (0, mongoose_1.Schema)({
         timestamps: true,

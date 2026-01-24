@@ -90,6 +90,7 @@ export class MongoUsersService {
             assessmentPurpose,
             workExperience,
             priorTests,
+            agreement,
         } = data;
 
         // Check if user already exists (by mobile or email)
@@ -122,6 +123,7 @@ export class MongoUsersService {
                 assessment_purpose: assessmentPurpose,
                 work_experience: workExperience || undefined,
                 prior_tests_taken: priorTests,
+                agreement: agreement,
             });
             await userDetails.save();
 
@@ -146,6 +148,7 @@ export class MongoUsersService {
                     assessment_purpose: assessmentPurpose,
                     work_experience: workExperience || undefined,
                     prior_tests_taken: priorTests,
+                    agreement: agreement,
                 });
             } else {
                 // Update existing user details
@@ -157,6 +160,7 @@ export class MongoUsersService {
                 userDetails.assessment_purpose = assessmentPurpose;
                 userDetails.work_experience = workExperience || undefined;
                 userDetails.prior_tests_taken = priorTests;
+                userDetails.agreement = agreement;
             }
 
             await userDetails.save();

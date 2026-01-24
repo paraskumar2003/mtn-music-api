@@ -76,7 +76,7 @@ let MongoUsersService = class MongoUsersService {
         }
     }
     async registerUser(data) {
-        const { name, mobile, email, dateOfBirth, gender, educationLevel, currentRole, organization, assessmentPurpose, workExperience, priorTests, } = data;
+        const { name, mobile, email, dateOfBirth, gender, educationLevel, currentRole, organization, assessmentPurpose, workExperience, priorTests, agreement, } = data;
         let user = await this.mongoUserModel.findOne({
             $or: [{ email }, { mobile: mobile || '' }].filter(condition => Object.values(condition)[0] !== ''),
         });
@@ -100,6 +100,7 @@ let MongoUsersService = class MongoUsersService {
                 assessment_purpose: assessmentPurpose,
                 work_experience: workExperience || undefined,
                 prior_tests_taken: priorTests,
+                agreement: agreement,
             });
             await userDetails.save();
             user.user_details = userDetails._id;
@@ -120,6 +121,7 @@ let MongoUsersService = class MongoUsersService {
                     assessment_purpose: assessmentPurpose,
                     work_experience: workExperience || undefined,
                     prior_tests_taken: priorTests,
+                    agreement: agreement,
                 });
             }
             else {
@@ -131,6 +133,7 @@ let MongoUsersService = class MongoUsersService {
                 userDetails.assessment_purpose = assessmentPurpose;
                 userDetails.work_experience = workExperience || undefined;
                 userDetails.prior_tests_taken = priorTests;
+                userDetails.agreement = agreement;
             }
             await userDetails.save();
             if (user.name !== name) {

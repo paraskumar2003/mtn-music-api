@@ -10,4 +10,5 @@ export declare class RegisterUserDto {
     mobile?: string;
     workExperience?: string;
     priorTests: boolean;
+    agreement: boolean;
 }

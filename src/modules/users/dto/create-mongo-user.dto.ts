@@ -55,4 +55,7 @@ export class RegisterUserDto {
     @IsNotEmpty({ message: 'Prior tests information is required' })
     @IsBoolean({ message: 'Prior tests must be either true or false' })
     priorTests: boolean;
+
+    @IsBoolean()
+    agreement: boolean;
 }

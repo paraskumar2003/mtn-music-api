@@ -71,4 +71,8 @@ __decorate([
     (0, class_validator_1.IsBoolean)({ message: 'Prior tests must be either true or false' }),
     __metadata("design:type", Boolean)
 ], RegisterUserDto.prototype, "priorTests", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], RegisterUserDto.prototype, "agreement", void 0);
 //# sourceMappingURL=create-mongo-user.dto.js.map

@@ -57,6 +57,9 @@ export class UserDetails extends BaseSchema {
         default: {},
     })
     additional_info?: Record<string, any>;
+
+    @Prop({ required: true })
+    agreement: boolean;
 }
 
 export const UserDetailsSchema = SchemaFactory.createForClass(UserDetails);
