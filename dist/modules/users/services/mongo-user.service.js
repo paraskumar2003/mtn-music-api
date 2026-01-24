@@ -22,10 +22,12 @@ const config_1 = require("@nestjs/config");
 const user_schema_1 = require("../schema/user.schema");
 const otp_schema_1 = require("../schema/otp.schema");
 const axios_1 = require("axios");
+const user_detail_schema_1 = require("../schema/user-detail.schema");
 let MongoUsersService = class MongoUsersService {
-    constructor(mongoUserModel, otpModel, configService) {
+    constructor(mongoUserModel, otpModel, userDetailsModel, configService) {
         this.mongoUserModel = mongoUserModel;
         this.otpModel = otpModel;
+        this.userDetailsModel = userDetailsModel;
         this.configService = configService;
     }
     async sendOtpEmail(email, otp) {
@@ -74,20 +76,67 @@ let MongoUsersService = class MongoUsersService {
         }
     }
     async registerUser(data) {
-        const { name, mobile, email } = data;
+        const { name, mobile, email, dateOfBirth, gender, educationLevel, currentRole, organization, assessmentPurpose, workExperience, priorTests, } = data;
         let user = await this.mongoUserModel.findOne({
-            $or: [{ email }, { mobile }],
+            $or: [{ email }, { mobile: mobile || '' }].filter(condition => Object.values(condition)[0] !== ''),
         });
         if (!user) {
             const hashedPassword = await bcrypt.hash('9876543210', 10);
             user = new this.mongoUserModel({
                 name,
-                mobile,
+                mobile: mobile || '',
                 email,
                 password: hashedPassword,
                 roles: [user_schema_1.UserRole.USER],
             });
             await user.save();
+            const userDetails = new this.userDetailsModel({
+                user_id: user._id,
+                date_of_birth: dateOfBirth,
+                gender,
+                education_level: educationLevel,
+                current_role: currentRole,
+                organization: organization || undefined,
+                assessment_purpose: assessmentPurpose,
+                work_experience: workExperience || undefined,
+                prior_tests_taken: priorTests,
+            });
+            await userDetails.save();
+            user.user_details = userDetails._id;
+            await user.save();
+        }
+        else {
+            let userDetails = await this.userDetailsModel.findOne({
+                user_id: user._id,
+            });
+            if (!userDetails) {
+                userDetails = new this.userDetailsModel({
+                    user_id: user._id,
+                    date_of_birth: dateOfBirth,
+                    gender,
+                    education_level: educationLevel,
+                    current_role: currentRole,
+                    organization: organization || undefined,
+                    assessment_purpose: assessmentPurpose,
+                    work_experience: workExperience || undefined,
+                    prior_tests_taken: priorTests,
+                });
+            }
+            else {
+                userDetails.date_of_birth = dateOfBirth;
+                userDetails.gender = gender;
+                userDetails.education_level = educationLevel;
+                userDetails.current_role = currentRole;
+                userDetails.organization = organization || undefined;
+                userDetails.assessment_purpose = assessmentPurpose;
+                userDetails.work_experience = workExperience || undefined;
+                userDetails.prior_tests_taken = priorTests;
+            }
+            await userDetails.save();
+            if (user.name !== name) {
+                user.name = name;
+                await user.save();
+            }
         }
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
         const lastOtp = await this.otpModel.findOne({
@@ -220,7 +269,9 @@ exports.MongoUsersService = MongoUsersService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(user_schema_1.MongoUser.name)),
     __param(1, (0, mongoose_1.InjectModel)(otp_schema_1.Otp.name)),
+    __param(2, (0, mongoose_1.InjectModel)(user_detail_schema_1.UserDetails.name)),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
         mongoose_2.Model,
         config_1.ConfigService])
 ], MongoUsersService);

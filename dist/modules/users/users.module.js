@@ -15,6 +15,7 @@ const mongo_user_service_1 = require("./services/mongo-user.service");
 const mongoose_1 = require("@nestjs/mongoose");
 const user_schema_1 = require("./schema/user.schema");
 const otp_schema_1 = require("./schema/otp.schema");
+const user_detail_schema_1 = require("./schema/user-detail.schema");
 let UsersModule = class UsersModule {
 };
 exports.UsersModule = UsersModule;
@@ -25,6 +26,7 @@ exports.UsersModule = UsersModule = __decorate([
             mongoose_1.MongooseModule.forFeature([
                 { name: user_schema_1.MongoUser.name, schema: user_schema_1.MongoUserSchema },
                 { name: otp_entity_1.Otp.name, schema: otp_schema_1.OtpSchema },
+                { name: user_detail_schema_1.UserDetails.name, schema: user_detail_schema_1.UserDetailsSchema },
             ]),
         ],
         controllers: [mongo_user_controller_1.MongoUsersController],

@@ -45,6 +45,13 @@ export class MongoUser extends BaseSchema {
         default: [UserRole.USER],
     })
     roles: UserRole[];
+
+    @Prop({
+        type: Types.ObjectId,
+        ref: 'UserDetails',
+        required: false,
+    })
+    user_details?: Types.ObjectId;
 }
 
 export const MongoUserSchema = SchemaFactory.createForClass(MongoUser);

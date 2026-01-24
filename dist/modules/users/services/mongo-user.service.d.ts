@@ -4,11 +4,13 @@ import { MongoUser, MongoUserDocument } from '../schema/user.schema';
 import { RegisterUserDto } from '../dto/create-mongo-user.dto';
 import { VerifyEmailOtpDto } from '../dto/otp/verify-otp.dto';
 import { Otp } from '../schema/otp.schema';
+import { UserDetails } from '../schema/user-detail.schema';
 export declare class MongoUsersService {
     private readonly mongoUserModel;
     private readonly otpModel;
+    private readonly userDetailsModel;
     private readonly configService;
-    constructor(mongoUserModel: Model<MongoUserDocument>, otpModel: Model<Otp>, configService: ConfigService);
+    constructor(mongoUserModel: Model<MongoUserDocument>, otpModel: Model<Otp>, userDetailsModel: Model<UserDetails>, configService: ConfigService);
     private sendOtpEmail;
     registerUser(data: RegisterUserDto): Promise<{
         otp_sent: boolean;

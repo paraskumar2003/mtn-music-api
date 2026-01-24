@@ -14,6 +14,7 @@ import { RegisterUserDto } from '../dto/create-mongo-user.dto';
 import { VerifyEmailOtpDto } from '../dto/otp/verify-otp.dto';
 import { Otp, OtpStatus } from '../schema/otp.schema';
 import axios from 'axios';
+import { UserDetails } from '../schema/user-detail.schema';
 
 @Injectable()
 export class MongoUsersService {
@@ -22,6 +23,8 @@ export class MongoUsersService {
         private readonly mongoUserModel: Model<MongoUserDocument>,
         @InjectModel(Otp.name)
         private readonly otpModel: Model<Otp>,
+        @InjectModel(UserDetails.name)
+        private readonly userDetailsModel: Model<UserDetails>,
         private readonly configService: ConfigService,
     ) {}
 
@@ -75,11 +78,25 @@ export class MongoUsersService {
     }
 
     async registerUser(data: RegisterUserDto): Promise<{ otp_sent: boolean }> {
-        const { name, mobile, email } = data;
+        const {
+            name,
+            mobile,
+            email,
+            dateOfBirth,
+            gender,
+            educationLevel,
+            currentRole,
+            organization,
+            assessmentPurpose,
+            workExperience,
+            priorTests,
+        } = data;
 
         // Check if user already exists (by mobile or email)
         let user = await this.mongoUserModel.findOne({
-            $or: [{ email }, { mobile }],
+            $or: [{ email }, { mobile: mobile || '' }].filter(
+                condition => Object.values(condition)[0] !== '',
+            ),
         });
 
         if (!user) {
@@ -87,12 +104,68 @@ export class MongoUsersService {
             const hashedPassword = await bcrypt.hash('9876543210', 10);
             user = new this.mongoUserModel({
                 name,
-                mobile,
+                mobile: mobile || '', // Handle optional mobile
                 email,
                 password: hashedPassword,
                 roles: [UserRole.USER],
             });
             await user.save();
+
+            // Create user details record
+            const userDetails = new this.userDetailsModel({
+                user_id: user._id,
+                date_of_birth: dateOfBirth,
+                gender,
+                education_level: educationLevel,
+                current_role: currentRole,
+                organization: organization || undefined, // Store only if provided
+                assessment_purpose: assessmentPurpose,
+                work_experience: workExperience || undefined,
+                prior_tests_taken: priorTests,
+            });
+            await userDetails.save();
+
+            // Update user with reference to details
+            user.user_details = userDetails._id;
+            await user.save();
+        } else {
+            // User exists, update their details
+            let userDetails = await this.userDetailsModel.findOne({
+                user_id: user._id,
+            });
+
+            if (!userDetails) {
+                // Create new user details if not exists
+                userDetails = new this.userDetailsModel({
+                    user_id: user._id,
+                    date_of_birth: dateOfBirth,
+                    gender,
+                    education_level: educationLevel,
+                    current_role: currentRole,
+                    organization: organization || undefined,
+                    assessment_purpose: assessmentPurpose,
+                    work_experience: workExperience || undefined,
+                    prior_tests_taken: priorTests,
+                });
+            } else {
+                // Update existing user details
+                userDetails.date_of_birth = dateOfBirth;
+                userDetails.gender = gender;
+                userDetails.education_level = educationLevel;
+                userDetails.current_role = currentRole;
+                userDetails.organization = organization || undefined;
+                userDetails.assessment_purpose = assessmentPurpose;
+                userDetails.work_experience = workExperience || undefined;
+                userDetails.prior_tests_taken = priorTests;
+            }
+
+            await userDetails.save();
+
+            // Update user name if changed
+            if (user.name !== name) {
+                user.name = name;
+                await user.save();
+            }
         }
 
         // ------------------------------

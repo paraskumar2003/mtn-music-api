@@ -16,6 +16,7 @@ export declare class MongoUser extends BaseSchema {
     password: string;
     is_active: boolean;
     roles: UserRole[];
+    user_details?: Types.ObjectId;
 }
 export declare const MongoUserSchema: import("mongoose").Schema<MongoUser, import("mongoose").Model<MongoUser, any, any, any, Document<unknown, any, MongoUser, any, {}> & MongoUser & Required<{
     _id: Types.ObjectId;

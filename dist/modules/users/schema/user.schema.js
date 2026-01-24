@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MongoUserSchema = exports.MongoUser = exports.UserRole = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
+const mongoose_2 = require("mongoose");
 const base_schema_1 = require("../../../common/base.schema");
 var UserRole;
 (function (UserRole) {
@@ -57,6 +58,14 @@ __decorate([
     }),
     __metadata("design:type", Array)
 ], MongoUser.prototype, "roles", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({
+        type: mongoose_2.Types.ObjectId,
+        ref: 'UserDetails',
+        required: false,
+    }),
+    __metadata("design:type", mongoose_2.Types.ObjectId)
+], MongoUser.prototype, "user_details", void 0);
 exports.MongoUser = MongoUser = __decorate([
     (0, mongoose_1.Schema)({
         timestamps: { createdAt: 'registered_at', updatedAt: true },
