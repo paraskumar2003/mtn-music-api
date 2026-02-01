@@ -43,6 +43,14 @@ let QuizController = class QuizController {
             mix_auditory: 18,
             mix_rhythmic: 25,
             mix_subconscious: 15,
+            recommended_department: 'Software Engineering',
+            secondary_department: 'Data Science',
+            department_reasoning: 'The Visual–Strategic Thinker profile aligns well with the Software Engineering department, which values creativity and problem-solving. Data Science, on the other hand, excels in data analysis and machine learning, which complements the Visual–Strategic Thinker’s analytical skills.',
+            hr_questions: [
+                'Can you describe a time when you had to work with a team to solve a complex problem?',
+                'What is your preferred method of communication with team members?',
+                'How do you handle stress and pressure in a fast-paced work environment?',
+            ],
         });
         res.set({
             'Content-Type': 'application/pdf',

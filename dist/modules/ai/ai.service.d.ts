@@ -13,4 +13,17 @@ export declare class AIService {
         rhythmic: number;
         subconscious: number;
     }>;
+    analyseDepartment(cognitiveProfile: {
+        visual: number;
+        auditory: number;
+        rhythmic: number;
+        subconscious: number;
+        confidence: number;
+    }): Promise<{
+        primary_department: string;
+        secondary_department: string;
+        reasoning: string;
+        hr_questions: string[];
+        is_error?: any;
+    }>;
 }

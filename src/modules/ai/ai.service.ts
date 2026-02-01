@@ -95,4 +95,68 @@ export class AIService {
             };
         }
     }
+
+    async analyseDepartment(cognitiveProfile: {
+        visual: number;
+        auditory: number;
+        rhythmic: number;
+        subconscious: number;
+        confidence: number;
+    }): Promise<{
+        primary_department: string;
+        secondary_department: string;
+        reasoning: string;
+        hr_questions: string[];
+        is_error?: any;
+    }> {
+        const journeyId = v4();
+
+        const config = {
+            url: 'http://65.1.91.197:8000/api/py/assessment/department',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: {
+                cognitive_profile: cognitiveProfile,
+            },
+        };
+
+        try {
+            const res = await axios.post(config.url, config.body, {
+                headers: config.headers,
+            });
+
+            this.logger.info('DEPARTMENT_ASSESSMENT_SUCCESS', journeyId, {
+                result: res.data,
+                profile: cognitiveProfile,
+            });
+
+            const result = res.data;
+
+            return {
+                primary_department: result.primary_department,
+                secondary_department: result.secondary_department,
+                reasoning: result.reasoning,
+                hr_questions: Array.isArray(result.hr_questions)
+                    ? result.hr_questions
+                    : [],
+            };
+        } catch (err) {
+            this.logger.error('ERROR_WHILE_ANALYSING_DEPARTMENT', journeyId, {
+                cognitive_profile: cognitiveProfile,
+                error: err.message,
+                stack: err.stack,
+            });
+
+            return {
+                primary_department: 'Unknown',
+                secondary_department: '',
+                reasoning:
+                    'Unable to determine department due to temporary evaluation error.',
+                hr_questions: [],
+                is_error: err.message,
+            };
+        }
+    }
 }

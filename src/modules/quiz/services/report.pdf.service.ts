@@ -223,11 +223,24 @@ There are no right or wrong answers. This assessment highlights your natural thi
             `This result indicates that your responses consistently aligned with ${data.top_profile}-driven thinking patterns throughout the assessment.`,
         );
 
+        /* ---------- Corporate Department Recommendation ---------- */
+        this.sectionTitle(doc, 'Most Suitable Corporate Department');
+
+        this.kv(doc, 'Primary Department', data.recommended_department);
+
+        if (data.secondary_department) {
+            this.kv(doc, 'Secondary Department', data.secondary_department);
+        }
+
+        doc.moveDown(0.5)
+            .fontSize(11)
+            .text(data.department_reasoning, { align: 'justify' });
+
         /* ---------- Breakdown ---------- */
         this.sectionTitle(doc, 'Cognitive Profile Breakdown');
 
         this.kv(doc, 'Visual Processing', `${data.mix_visual}%`);
-        this.kv(doc, 'Auditory Interpretation', `${data.mix_auditory}%`);
+        // this.kv(doc, 'Auditory Interpretation', `${data.mix_auditory}%`);
         this.kv(doc, 'Rhythmic / Pattern Recognition', `${data.mix_rhythmic}%`);
         this.kv(
             doc,
@@ -243,11 +256,11 @@ There are no right or wrong answers. This assessment highlights your natural thi
             'Visual Processing',
             this.strength_text.visual[this.getLevel(data.mix_visual)],
         );
-        this.subSection(
-            doc,
-            'Auditory Processing',
-            this.strength_text.auditory[this.getLevel(data.mix_auditory)],
-        );
+        // this.subSection(
+        //     doc,
+        //     'Auditory Processing',
+        //     this.strength_text.auditory[this.getLevel(data.mix_auditory)],
+        // );
         this.subSection(
             doc,
             'Rhythmic & Pattern Recognition',
@@ -263,6 +276,24 @@ There are no right or wrong answers. This assessment highlights your natural thi
 
         /* ---------- Advisory ---------- */
         this.sectionTitle(doc, 'Important Advisory');
+
+        /* ---------- HR Interview Preparation ---------- */
+        this.sectionTitle(doc, 'Recommended HR Interview Questions');
+
+        doc.fontSize(11).text(
+            `Based on your cognitive profile and dominant thinking style, the following HR interview questions are commonly asked for roles aligned with your recommended department.`,
+            { align: 'justify' },
+        );
+
+        doc.moveDown(0.8);
+
+        data.hr_questions?.forEach((question, index) => {
+            doc.fontSize(11)
+                .text(`${index + 1}. ${question}`, {
+                    align: 'left',
+                })
+                .moveDown(0.4);
+        });
 
         doc.fontSize(10).text(
             `This neuroprofiling report is generated using AI-assisted analysis of visual interpretation patterns.

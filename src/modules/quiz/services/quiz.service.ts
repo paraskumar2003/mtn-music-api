@@ -422,7 +422,29 @@ export class QuizService implements OnModuleInit {
                 auditory: auditoryAvg.score,
                 rhythmic: rhythmicAvg.score,
                 subconscious: subconsciousAvg.score,
+                confidence:
+                    (visualAvg.confidence +
+                        auditoryAvg.confidence +
+                        rhythmicAvg.confidence +
+                        subconsciousAvg.confidence) /
+                    4,
             };
+
+            /** find the department details based on the cognitive profile */
+
+            const departmentDetails =
+                await this.aiService.analyseDepartment(dimensions);
+
+            if (departmentDetails.is_error) {
+                this.logger.error(
+                    'ERROR_WHILE_ANALYSING_DEPARTMENT',
+                    journeyId,
+                    {
+                        message: departmentDetails.is_error.message,
+                        dimensions,
+                    },
+                );
+            }
 
             const dominantDimension = Object.entries(dimensions).reduce(
                 (dominant, current) => {
@@ -459,6 +481,10 @@ export class QuizService implements OnModuleInit {
                 mix_subconscious: Math.floor(
                     (subconsciousAvg.score * 100) / submittedQuestions.length,
                 ),
+                recommended_department: departmentDetails?.primary_department,
+                secondary_department: departmentDetails?.secondary_department,
+                department_reasoning: departmentDetails?.reasoning,
+                hr_questions: departmentDetails?.hr_questions,
             };
 
             this.logger.info('MAIL_VARIABLES', journeyId, { mailVariables });

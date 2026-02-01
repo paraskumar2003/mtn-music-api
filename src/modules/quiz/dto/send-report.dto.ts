@@ -19,6 +19,10 @@ export class NeuroprofilingMailVariablesDto {
     mix_auditory: number;
     mix_rhythmic: number;
     mix_subconscious: number;
+    recommended_department: string;
+    secondary_department?: string;
+    department_reasoning: string;
+    hr_questions?: string[];
 }
 
 export class SendMailDto {
