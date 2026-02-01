@@ -37,7 +37,7 @@ let QuizService = class QuizService {
         this.configService = configService;
         this.userService = userService;
         this.reportPdfService = reportPdfService;
-        this.timerInSeconds = 60 * 3;
+        this.timerInSeconds = 1 * 20;
         this.totalNoOfQuestionToBeAsked = +this.configService.get('NO_OF_QUESTIONS_TO_BE_ASKED');
         if (!this.totalNoOfQuestionToBeAsked) {
             throw new Error('NO_OF_QUESTIONS_TO_BE_ASKED is not defined in .env or is not a number');
@@ -64,6 +64,15 @@ let QuizService = class QuizService {
             .sort({ seq_no: 1 });
         if (!question)
             throw new common_1.NotFoundException('No questions available');
+        const existingQuiz = await this.quizModel.findOne({
+            user: new mongoose_2.Types.ObjectId(user_id),
+            played_at: {
+                $gt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+            },
+        });
+        if (existingQuiz) {
+            throw new common_1.BadRequestException('You have already played a quiz. Please try again later.');
+        }
         const createdQuiz = await this.quizModel.create({
             user: new mongoose_2.Types.ObjectId(user_id),
             total_questions: 1,
@@ -181,6 +190,9 @@ let QuizService = class QuizService {
                 });
             }, 10000);
         }
+        console.log('alreadyAskedQuestionIds', alreadyAskedQuestionIds);
+        console.log('totalNoOfQuestionToBeAsked', this.totalNoOfQuestionToBeAsked);
+        console.log('totalQuestions', totalNoOfQuestions);
         return {
             message: 'Answer Submitted',
             added_score: null,

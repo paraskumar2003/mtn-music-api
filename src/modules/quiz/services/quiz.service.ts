@@ -54,7 +54,7 @@ export class QuizService implements OnModuleInit {
         }
     }
 
-    private readonly timerInSeconds = 60 * 3;
+    private readonly timerInSeconds = 1 * 20;
 
     private calculateAverage(
         key: 'visual' | 'auditory' | 'rhythmic' | 'subconscious',
@@ -95,6 +95,20 @@ export class QuizService implements OnModuleInit {
             .sort({ seq_no: 1 });
 
         if (!question) throw new NotFoundException('No questions available');
+
+        /** if a quiz already exists for this user in the last 24 hours, throw bad request exception - 'You have already started a quiz' */
+        const existingQuiz = await this.quizModel.findOne({
+            user: new Types.ObjectId(user_id),
+            played_at: {
+                $gt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+            },
+        });
+
+        if (existingQuiz) {
+            throw new BadRequestException(
+                'You have already played a quiz. Please try again later.',
+            );
+        }
 
         const createdQuiz = await this.quizModel.create({
             user: new Types.ObjectId(user_id),
@@ -263,6 +277,13 @@ export class QuizService implements OnModuleInit {
                 });
             }, 10000);
         }
+
+        console.log('alreadyAskedQuestionIds', alreadyAskedQuestionIds);
+        console.log(
+            'totalNoOfQuestionToBeAsked',
+            this.totalNoOfQuestionToBeAsked,
+        );
+        console.log('totalQuestions', totalNoOfQuestions);
 
         return {
             message: 'Answer Submitted',
