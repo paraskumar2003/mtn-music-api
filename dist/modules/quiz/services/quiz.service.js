@@ -247,7 +247,8 @@ let QuizService = class QuizService {
             user_id: payload.user_id,
         });
         try {
-            let user = await this.userService.getUserDetailsByUserId(payload.user_id);
+            let user = await this.userService.getUserById(payload.user_id);
+            let user_details = await this.userService.getUserDetailsByUserId(payload.user_id);
             if (!user) {
                 this.logger.info('USER_DETAILS_NOT_FOUND_WHILE_REPORT_GENERATION', journeyId, { payload });
             }
@@ -286,8 +287,8 @@ let QuizService = class QuizService {
             let mailVariables = {
                 name: user.name,
                 email: user.email,
-                role: user.working_role ?? 'N/A',
-                age_range: user.age ?? 'N/A',
+                role: user_details.current_role ?? 'N/A',
+                experience: `${user_details.work_experience ?? 'N/A'} years`,
                 test_duration: submittedQuestions.length * 3,
                 report_date: new Date().toLocaleDateString('en-US', {
                     day: '2-digit',

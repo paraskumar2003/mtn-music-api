@@ -197,7 +197,7 @@ export class ReportPdfService {
         this.kv(doc, 'Participant Name', data.name);
         this.kv(doc, 'Email', data.email);
         this.kv(doc, 'Role', data.role);
-        this.kv(doc, 'Age Range', data.age_range);
+        this.kv(doc, 'Experience Range', data.experience);
         this.kv(doc, 'Assessment Type', 'Image-Based Strategic Interpretation');
         this.kv(doc, 'Test Duration', `${data.test_duration} minutes`);
         this.kv(doc, 'Date of Assessment', data.report_date);

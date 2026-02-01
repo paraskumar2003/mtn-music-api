@@ -15,6 +15,7 @@ import { VerifyEmailOtpDto } from '../dto/otp/verify-otp.dto';
 import { Otp, OtpStatus } from '../schema/otp.schema';
 import axios from 'axios';
 import { UserDetails } from '../schema/user-detail.schema';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class MongoUsersService {
@@ -95,10 +96,20 @@ export class MongoUsersService {
 
         // Check if user already exists (by mobile or email)
         let user = await this.mongoUserModel.findOne({
-            $or: [{ email }, { mobile: mobile || '' }].filter(
-                condition => Object.values(condition)[0] !== '',
-            ),
+            email,
         });
+
+        if (!user) {
+            user = await this.mongoUserModel.findOne({
+                mobile,
+            });
+
+            if (user) {
+                throw new BadRequestException(
+                    'User with this mobile number already exists',
+                );
+            }
+        }
 
         if (!user) {
             // Hash password and create new user
@@ -129,7 +140,6 @@ export class MongoUsersService {
 
             // Update user with reference to details
             user.user_details = userDetails._id;
-            await user.save();
         } else {
             // User exists, update their details
             let userDetails = await this.userDetailsModel.findOne({
@@ -315,8 +325,14 @@ export class MongoUsersService {
         };
     }
 
+    async getUserById(userId: string) {
+        return await this.mongoUserModel.findById(userId);
+    }
+
     async getUserDetailsByUserId(user_id: string) {
-        return await this.mongoUserModel.findById(user_id);
+        return await this.userDetailsModel.findOne({
+            user_id: new Types.ObjectId(user_id),
+        });
     }
 
     async upsertUserByEmail(params: {

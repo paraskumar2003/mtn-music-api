@@ -23,6 +23,7 @@ const user_schema_1 = require("../schema/user.schema");
 const otp_schema_1 = require("../schema/otp.schema");
 const axios_1 = require("axios");
 const user_detail_schema_1 = require("../schema/user-detail.schema");
+const mongoose_3 = require("mongoose");
 let MongoUsersService = class MongoUsersService {
     constructor(mongoUserModel, otpModel, userDetailsModel, configService) {
         this.mongoUserModel = mongoUserModel;
@@ -78,8 +79,16 @@ let MongoUsersService = class MongoUsersService {
     async registerUser(data) {
         const { name, mobile, email, dateOfBirth, gender, educationLevel, currentRole, organization, assessmentPurpose, workExperience, priorTests, agreement, } = data;
         let user = await this.mongoUserModel.findOne({
-            $or: [{ email }, { mobile: mobile || '' }].filter(condition => Object.values(condition)[0] !== ''),
+            email,
         });
+        if (!user) {
+            user = await this.mongoUserModel.findOne({
+                mobile,
+            });
+            if (user) {
+                throw new common_1.BadRequestException('User with this mobile number already exists');
+            }
+        }
         if (!user) {
             const hashedPassword = await bcrypt.hash('9876543210', 10);
             user = new this.mongoUserModel({
@@ -104,7 +113,6 @@ let MongoUsersService = class MongoUsersService {
             });
             await userDetails.save();
             user.user_details = userDetails._id;
-            await user.save();
         }
         else {
             let userDetails = await this.userDetailsModel.findOne({
@@ -222,8 +230,13 @@ let MongoUsersService = class MongoUsersService {
             otp_verified: true,
         };
     }
+    async getUserById(userId) {
+        return await this.mongoUserModel.findById(userId);
+    }
     async getUserDetailsByUserId(user_id) {
-        return await this.mongoUserModel.findById(user_id);
+        return await this.userDetailsModel.findOne({
+            user_id: new mongoose_3.Types.ObjectId(user_id),
+        });
     }
     async upsertUserByEmail(params) {
         const { name, email, mobile, age, role } = params;

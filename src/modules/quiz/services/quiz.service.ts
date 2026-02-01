@@ -394,7 +394,8 @@ export class QuizService implements OnModuleInit {
         }
              */
 
-            let user = await this.userService.getUserDetailsByUserId(
+            let user = await this.userService.getUserById(payload.user_id);
+            let user_details = await this.userService.getUserDetailsByUserId(
                 payload.user_id,
             );
 
@@ -478,8 +479,8 @@ export class QuizService implements OnModuleInit {
             let mailVariables = {
                 name: user.name,
                 email: user.email,
-                role: user.working_role ?? 'N/A',
-                age_range: user.age ?? 'N/A',
+                role: user_details.current_role ?? 'N/A',
+                experience: `${user_details.work_experience ?? 'N/A'} years`,
                 test_duration: submittedQuestions.length * 3,
                 report_date: new Date().toLocaleDateString('en-US', {
                     day: '2-digit',

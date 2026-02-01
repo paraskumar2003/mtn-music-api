@@ -34,7 +34,7 @@ let QuizController = class QuizController {
             name: 'Paras Kumar',
             email: 'paras.kumar@example.com',
             role: 'Software Engineer',
-            age_range: '22–30',
+            experience: '2 years',
             test_duration: 18,
             report_date: '06 Jan 2026',
             top_profile: 'Visual–Strategic Thinker',

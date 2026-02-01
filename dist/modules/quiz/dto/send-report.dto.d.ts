@@ -2,7 +2,7 @@ export declare class NeuroprofilingMailVariablesDto {
     name: string;
     email: string;
     role: string;
-    age_range: string;
+    experience: string;
     test_duration: number;
     report_date: string;
     top_profile: string;
