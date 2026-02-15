@@ -100,6 +100,22 @@ __decorate([
     (0, mongoose_1.Prop)({ required: false }),
     __metadata("design:type", Number)
 ], SubmittedQuestion.prototype, "subconscious", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: false }),
+    __metadata("design:type", String)
+], SubmittedQuestion.prototype, "candidates_approach", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: false }),
+    __metadata("design:type", String)
+], SubmittedQuestion.prototype, "demonstrated_strengths", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: false }),
+    __metadata("design:type", String)
+], SubmittedQuestion.prototype, "omissions_or_delays", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: false }),
+    __metadata("design:type", String)
+], SubmittedQuestion.prototype, "hr_interpretation", void 0);
 exports.SubmittedQuestion = SubmittedQuestion = __decorate([
     (0, mongoose_1.Schema)({
         collection: 'submitted_questions',

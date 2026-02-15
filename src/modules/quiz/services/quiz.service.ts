@@ -56,7 +56,7 @@ export class QuizService implements OnModuleInit {
 
     private readonly timerInSeconds = 1 * 20;
 
-    private calculateAverage(
+    calculateAverage(
         key: 'visual' | 'auditory' | 'rhythmic' | 'subconscious',
         questions: any[],
     ) {
@@ -79,12 +79,6 @@ export class QuizService implements OnModuleInit {
 
     async onModuleInit() {
         console.log('EVENT_FIRED');
-        // setTimeout(() => {
-        //     this.eventEmitter.emit('quiz.report.sendMail', {
-        //         quiz_id: '69628930319a138a687d1b25',
-        //         user_id: '695d3908e563adf02cfef831',
-        //     });
-        // }, 5000);
     }
 
     /** 🎯 Initiate quiz — send one question to user */
@@ -412,9 +406,22 @@ export class QuizService implements OnModuleInit {
                 );
             }
 
+            let quiz = await this.quizModel.findById(payload.quiz_id);
+
+            if (!quiz) {
+                this.logger.info(
+                    'QUIZ_NOT_FOUND_WHILE_REPORT_GENERATION',
+                    journeyId,
+                    { payload },
+                );
+            }
+
             /** find all answered questions */
             let submittedQuestions = await this.submittedQuestionModel.find({
                 quiz: new Types.ObjectId(payload.quiz_id),
+            }).populate({
+                path: 'question',
+                select: 'question_text', // pick only what you need
             });
 
             if (!submittedQuestions || submittedQuestions.length === 0) {
@@ -427,59 +434,7 @@ export class QuizService implements OnModuleInit {
 
             /** find average of all four parameters */
 
-            const visualAvg = this.calculateAverage(
-                'visual',
-                submittedQuestions,
-            );
-            const auditoryAvg = this.calculateAverage(
-                'auditory',
-                submittedQuestions,
-            );
-            const rhythmicAvg = this.calculateAverage(
-                'rhythmic',
-                submittedQuestions,
-            );
-            const subconsciousAvg = this.calculateAverage(
-                'subconscious',
-                submittedQuestions,
-            );
-
-            const dimensions = {
-                visual: visualAvg.score,
-                auditory: auditoryAvg.score,
-                rhythmic: rhythmicAvg.score,
-                subconscious: subconsciousAvg.score,
-                confidence:
-                    (visualAvg.confidence +
-                        auditoryAvg.confidence +
-                        rhythmicAvg.confidence +
-                        subconsciousAvg.confidence) /
-                    4,
-            };
-
             /** find the department details based on the cognitive profile */
-
-            const departmentDetails =
-                await this.aiService.analyseDepartment(dimensions);
-
-            if (departmentDetails.is_error) {
-                this.logger.error(
-                    'ERROR_WHILE_ANALYSING_DEPARTMENT',
-                    journeyId,
-                    {
-                        message: departmentDetails.is_error.message,
-                        dimensions,
-                    },
-                );
-            }
-
-            const dominantDimension = Object.entries(dimensions).reduce(
-                (dominant, current) => {
-                    const [key, value] = current;
-                    return value > dominant.value ? { key, value } : dominant;
-                },
-                { key: null as string | null, value: -Infinity },
-            );
 
             let mailVariables = {
                 name: user.name,
@@ -492,31 +447,26 @@ export class QuizService implements OnModuleInit {
                     month: 'short',
                     year: 'numeric',
                 }),
-
-                top_profile: `${dominantDimension.key?.charAt(0).toUpperCase() + dominantDimension.key?.slice(1)} Thinker`,
-                confidence: `High (${Math.floor(visualAvg.confidence)}%)`,
-
-                mix_visual: Math.floor(
-                    (visualAvg.score * 100) / submittedQuestions.length,
-                ),
-                mix_auditory: Math.floor(
-                    (auditoryAvg.score * 100) / submittedQuestions.length,
-                ),
-                mix_rhythmic: Math.floor(
-                    (rhythmicAvg.score * 100) / submittedQuestions.length,
-                ),
-                mix_subconscious: Math.floor(
-                    (subconsciousAvg.score * 100) / submittedQuestions.length,
-                ),
-                recommended_department: departmentDetails?.primary_department,
-                secondary_department: departmentDetails?.secondary_department,
-                department_reasoning: departmentDetails?.reasoning,
-                hr_questions: departmentDetails?.hr_questions,
+                questions: submittedQuestions.map((question: any) => {
+                    return {
+                        question: question.question.question_text,
+                        focus: question.demonstrated_strengths,
+                        missed: question.omissions_or_delays,
+                        hr_interpretation: question.hr_interpretation
+                    }
+                }),
+                final_verdict: `This candidate demonstrates a consistent pattern of deep visual reasoning, exploratory analysis, and
+systems-level thinking across all six questions.
+They are best suited for roles involving analysis, design, strategy, or research, where understanding
+complex structures is essential and time can be allocated for exploration.
+With appropriate role framing, clear priorities, and structured deadlines, this individual is likely to deliver
+high-quality insights and long-term value to the organisation.`,
             };
 
             this.logger.info('MAIL_VARIABLES', journeyId, { mailVariables });
 
             await this.reportPdfService.generatePdfAndSendMail(mailVariables);
+
         } catch (err) {
             this.logger.error('ERROR_WHILE_SENDING_QUIZ_REPORT', journeyId, {
                 message: err.message,

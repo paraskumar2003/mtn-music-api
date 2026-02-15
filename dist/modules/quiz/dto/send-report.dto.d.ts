@@ -16,6 +16,15 @@ export declare class NeuroprofilingMailVariablesDto {
     department_reasoning: string;
     hr_questions?: string[];
 }
+export declare class NewNeuroprofilingMailVariablesDto {
+    name: string;
+    email: string;
+    role: string;
+    experience: string;
+    test_duration: number;
+    report_date: string;
+    final_verdict: string;
+}
 export declare class SendMailDto {
     to: string | string[];
     from: string;

@@ -63,6 +63,10 @@ let AIService = class AIService {
                 auditory: result.auditory,
                 rhythmic: result.rhythmic,
                 subconscious: result.subconscious,
+                candidates_approach: result.candidates_approach,
+                demonstrated_strengths: result.demonstrated_strengths,
+                omissions_or_delays: result.omissions_or_delays,
+                hr_interpretation: result.hr_interpretation,
             };
         }
         catch (err) {
@@ -81,6 +85,10 @@ let AIService = class AIService {
                 auditory: 7,
                 rhythmic: 6,
                 subconscious: 5,
+                candidates_approach: '',
+                demonstrated_strengths: '',
+                omissions_or_delays: '',
+                hr_interpretation: '',
             };
         }
     }

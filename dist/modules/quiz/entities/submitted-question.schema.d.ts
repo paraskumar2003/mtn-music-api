@@ -23,6 +23,10 @@ export declare class SubmittedQuestion extends BaseSchema {
     auditory?: number;
     rhythmic?: number;
     subconscious?: number;
+    candidates_approach?: string;
+    demonstrated_strengths?: string;
+    omissions_or_delays?: string;
+    hr_interpretation?: string;
 }
 export declare const SubmittedQuestionSchema: import("mongoose").Schema<SubmittedQuestion, import("mongoose").Model<SubmittedQuestion, any, any, any, Document<unknown, any, SubmittedQuestion, any, {}> & SubmittedQuestion & Required<{
     _id: Types.ObjectId;

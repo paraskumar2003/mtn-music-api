@@ -127,6 +127,66 @@ let ReportPdfService = class ReportPdfService {
         doc.moveDown(1).fontSize(12).text(title);
         doc.fontSize(11).text(`Strength:\n${strength}`);
     }
+    async generatePdfNew(data) {
+        const doc = new PDFDocument({
+            size: 'A4',
+            margin: 50,
+        });
+        const stream = new stream_1.PassThrough();
+        const buffers = [];
+        doc.pipe(stream);
+        stream.on('data', buffers.push.bind(buffers));
+        doc.fontSize(18)
+            .text('MTNP – Visual Cognitive Hiring Report (Deep Analysis)', {
+            align: 'center',
+        })
+            .moveDown(1.2);
+        doc.fontSize(11)
+            .text('Intended Reader: HR / Hiring Manager', { align: 'center' })
+            .moveDown(1.5);
+        this.sectionTitle(doc, 'Candidate Information');
+        this.kv(doc, 'Candidate Name', data.name);
+        this.kv(doc, 'Email', data.email);
+        this.kv(doc, 'Role Applied For', data.role);
+        this.kv(doc, 'Assessment Basis', 'Visual interpretation of structured material');
+        this.kv(doc, 'Questions Evaluated', `${data.questions.length}`);
+        this.kv(doc, 'Assessment Date', data.report_date);
+        this.sectionTitle(doc, 'Report Overview');
+        doc.fontSize(11).text(`This report provides a detailed, question-by-question analysis of how the candidate visually interprets complex information.
+The evaluation focuses on attention patterns, prioritisation behaviour, synthesis ability, and strategic reasoning.
+Each section highlights what the candidate focused on, what was missed, and the resulting HR interpretation.`, { align: 'justify' });
+        this.sectionTitle(doc, 'Detailed Question Analysis');
+        data.questions.forEach((q, index) => {
+            doc.moveDown(0.8);
+            doc.fontSize(13)
+                .text(`Question ${index + 1}`, { underline: true })
+                .moveDown(0.4);
+            doc.fontSize(11).text(`Focus Area:`, { continued: true }).font('Helvetica-Bold')
+                .text(` ${q.focus}`)
+                .font('Helvetica')
+                .moveDown(0.3);
+            doc.fontSize(11).text(`What Was Missed:`, { continued: true }).font('Helvetica-Bold')
+                .text(` ${q.missed}`)
+                .font('Helvetica')
+                .moveDown(0.3);
+            doc.fontSize(11).text(`HR Interpretation:`, { continued: true }).font('Helvetica-Bold')
+                .text(` ${q.hr_interpretation}`)
+                .font('Helvetica')
+                .moveDown(0.6);
+        });
+        this.sectionTitle(doc, 'Final HR Verdict');
+        doc.fontSize(11).text(data.final_verdict, { align: 'justify' });
+        this.sectionTitle(doc, 'Important Advisory');
+        doc.fontSize(10).text(`This report is generated using AI-assisted analysis of visual interpretation behaviour.
+It is intended to support hiring, role placement, and cognitive alignment discussions.
+This assessment does not constitute a psychological or medical evaluation and should be interpreted alongside interviews and practical assessments.`, { align: 'justify' });
+        doc.end();
+        return new Promise(resolve => {
+            stream.on('end', () => {
+                resolve(Buffer.concat(buffers));
+            });
+        });
+    }
     async generatePdf(data) {
         const doc = new PDFDocument({
             size: 'A4',
@@ -158,14 +218,6 @@ There are no right or wrong answers. This assessment highlights your natural thi
         this.kv(doc, 'Primary Cognitive Style', data.top_profile);
         this.kv(doc, 'Confidence Level', data.confidence);
         doc.moveDown().text(`This result indicates that your responses consistently aligned with ${data.top_profile}-driven thinking patterns throughout the assessment.`);
-        this.sectionTitle(doc, 'Most Suitable Corporate Department');
-        this.kv(doc, 'Primary Department', data.recommended_department);
-        if (data.secondary_department) {
-            this.kv(doc, 'Secondary Department', data.secondary_department);
-        }
-        doc.moveDown(0.5)
-            .fontSize(11)
-            .text(data.department_reasoning, { align: 'justify' });
         this.sectionTitle(doc, 'Cognitive Profile Breakdown');
         this.kv(doc, 'Visual Processing', `${data.mix_visual}%`);
         this.kv(doc, 'Rhythmic / Pattern Recognition', `${data.mix_rhythmic}%`);
@@ -175,16 +227,6 @@ There are no right or wrong answers. This assessment highlights your natural thi
         this.subSection(doc, 'Rhythmic & Pattern Recognition', this.strength_text.rhythmic[this.getLevel(data.mix_rhythmic)]);
         this.subSection(doc, 'Subconscious & Abstract Interpretation', this.strength_text.subconscious[this.getLevel(data.mix_subconscious)]);
         this.sectionTitle(doc, 'Important Advisory');
-        this.sectionTitle(doc, 'Recommended HR Interview Questions');
-        doc.fontSize(11).text(`Based on your cognitive profile and dominant thinking style, the following HR interview questions are commonly asked for roles aligned with your recommended department.`, { align: 'justify' });
-        doc.moveDown(0.8);
-        data.hr_questions?.forEach((question, index) => {
-            doc.fontSize(11)
-                .text(`${index + 1}. ${question}`, {
-                align: 'left',
-            })
-                .moveDown(0.4);
-        });
         doc.fontSize(10).text(`This neuroprofiling report is generated using AI-assisted analysis of visual interpretation patterns.
 It is intended solely as a research and self-awareness tool for educational, creative, and cognitive exploration.
 This report does not constitute a medical, psychological, or clinical diagnosis and should not be used as a substitute for professional evaluation.`, { align: 'justify' });
@@ -196,7 +238,7 @@ This report does not constitute a medical, psychological, or clinical diagnosis 
         });
     }
     async generatePdfAndSendMail(data) {
-        const pdfBuffer = await this.generatePdf(data);
+        const pdfBuffer = await this.generatePdfNew(data);
         let result = await this.sendMail({
             to: data.email,
             from: 'no-reply@almonds.ai',

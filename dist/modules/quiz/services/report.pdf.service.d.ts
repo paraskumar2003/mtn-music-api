@@ -1,4 +1,4 @@
-import { NeuroprofilingMailVariablesDto } from '../dto/send-report.dto';
+import { NeuroprofilingMailVariablesDto, NewNeuroprofilingMailVariablesDto } from '../dto/send-report.dto';
 import { ConfigService } from '@nestjs/config';
 import { CustomLoggerService } from '../../../logger/logger.service';
 export declare class ReportPdfService {
@@ -12,6 +12,23 @@ export declare class ReportPdfService {
     private sectionTitle;
     private kv;
     private subSection;
+    generatePdfNew(data: NewNeuroprofilingMailVariablesDto & {
+        questions: {
+            question: string;
+            focus: string;
+            missed: string;
+            hr_interpretation: string;
+        }[];
+        final_verdict: string;
+    }): Promise<Buffer>;
     generatePdf(data: NeuroprofilingMailVariablesDto): Promise<Buffer>;
-    generatePdfAndSendMail(data: NeuroprofilingMailVariablesDto): Promise<void>;
+    generatePdfAndSendMail(data: NewNeuroprofilingMailVariablesDto & {
+        questions: {
+            question: string;
+            focus: string;
+            missed: string;
+            hr_interpretation: string;
+        }[];
+        final_verdict: string;
+    }): Promise<void>;
 }

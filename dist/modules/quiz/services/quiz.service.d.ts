@@ -23,7 +23,10 @@ export declare class QuizService implements OnModuleInit {
     private totalNoOfQuestionToBeAsked;
     constructor(quizModel: Model<QuizDocument>, questionModel: Model<QuestionDocument>, submittedQuestionModel: Model<SubmittedQuestion>, aiService: AIService, eventEmitter: EventEmitter2, logger: CustomLoggerService, configService: ConfigService, userService: MongoUsersService, reportPdfService: ReportPdfService);
     private readonly timerInSeconds;
-    private calculateAverage;
+    calculateAverage(key: 'visual' | 'auditory' | 'rhythmic' | 'subconscious', questions: any[]): {
+        score: number;
+        confidence: number;
+    };
     onModuleInit(): Promise<void>;
     initiateQuiz(user_id: string): Promise<{
         message: string;

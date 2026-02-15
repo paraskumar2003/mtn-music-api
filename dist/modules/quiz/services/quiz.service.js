@@ -231,11 +231,16 @@ let QuizService = class QuizService {
         submittedQuestionDoc.is_evaluated_by_llm = true;
         submittedQuestionDoc.confidence_score =
             aiResponse?.confidence_score || 0;
+        1;
         submittedQuestionDoc.reason = aiResponse?.reason || '';
         submittedQuestionDoc.visual = aiResponse?.visual || 0;
         submittedQuestionDoc.auditory = aiResponse?.auditory || 0;
         submittedQuestionDoc.rhythmic = aiResponse?.rhythmic || 0;
         submittedQuestionDoc.subconscious = aiResponse?.subconscious || 0;
+        submittedQuestionDoc.candidates_approach = aiResponse?.candidates_approach || '';
+        submittedQuestionDoc.demonstrated_strengths = aiResponse?.demonstrated_strengths || '';
+        submittedQuestionDoc.omissions_or_delays = aiResponse?.omissions_or_delays || '';
+        submittedQuestionDoc.hr_interpretation = aiResponse?.hr_interpretation || '';
         submittedQuestionDoc.err_while_evaluation_by_llm =
             aiResponse?.is_error || null;
         await submittedQuestionDoc.save();
@@ -252,38 +257,19 @@ let QuizService = class QuizService {
             if (!user) {
                 this.logger.info('USER_DETAILS_NOT_FOUND_WHILE_REPORT_GENERATION', journeyId, { payload });
             }
+            let quiz = await this.quizModel.findById(payload.quiz_id);
+            if (!quiz) {
+                this.logger.info('QUIZ_NOT_FOUND_WHILE_REPORT_GENERATION', journeyId, { payload });
+            }
             let submittedQuestions = await this.submittedQuestionModel.find({
                 quiz: new mongoose_2.Types.ObjectId(payload.quiz_id),
+            }).populate({
+                path: 'question',
+                select: 'question_text',
             });
             if (!submittedQuestions || submittedQuestions.length === 0) {
                 this.logger.info('NO_ANSWERED_QUESTIONS_FOUND_WHILE_REPORT_GENERATION', journeyId, { payload });
             }
-            const visualAvg = this.calculateAverage('visual', submittedQuestions);
-            const auditoryAvg = this.calculateAverage('auditory', submittedQuestions);
-            const rhythmicAvg = this.calculateAverage('rhythmic', submittedQuestions);
-            const subconsciousAvg = this.calculateAverage('subconscious', submittedQuestions);
-            const dimensions = {
-                visual: visualAvg.score,
-                auditory: auditoryAvg.score,
-                rhythmic: rhythmicAvg.score,
-                subconscious: subconsciousAvg.score,
-                confidence: (visualAvg.confidence +
-                    auditoryAvg.confidence +
-                    rhythmicAvg.confidence +
-                    subconsciousAvg.confidence) /
-                    4,
-            };
-            const departmentDetails = await this.aiService.analyseDepartment(dimensions);
-            if (departmentDetails.is_error) {
-                this.logger.error('ERROR_WHILE_ANALYSING_DEPARTMENT', journeyId, {
-                    message: departmentDetails.is_error.message,
-                    dimensions,
-                });
-            }
-            const dominantDimension = Object.entries(dimensions).reduce((dominant, current) => {
-                const [key, value] = current;
-                return value > dominant.value ? { key, value } : dominant;
-            }, { key: null, value: -Infinity });
             let mailVariables = {
                 name: user.name,
                 email: user.email,
@@ -295,16 +281,20 @@ let QuizService = class QuizService {
                     month: 'short',
                     year: 'numeric',
                 }),
-                top_profile: `${dominantDimension.key?.charAt(0).toUpperCase() + dominantDimension.key?.slice(1)} Thinker`,
-                confidence: `High (${Math.floor(visualAvg.confidence)}%)`,
-                mix_visual: Math.floor((visualAvg.score * 100) / submittedQuestions.length),
-                mix_auditory: Math.floor((auditoryAvg.score * 100) / submittedQuestions.length),
-                mix_rhythmic: Math.floor((rhythmicAvg.score * 100) / submittedQuestions.length),
-                mix_subconscious: Math.floor((subconsciousAvg.score * 100) / submittedQuestions.length),
-                recommended_department: departmentDetails?.primary_department,
-                secondary_department: departmentDetails?.secondary_department,
-                department_reasoning: departmentDetails?.reasoning,
-                hr_questions: departmentDetails?.hr_questions,
+                questions: submittedQuestions.map((question) => {
+                    return {
+                        question: question.question.question_text,
+                        focus: question.demonstrated_strengths,
+                        missed: question.omissions_or_delays,
+                        hr_interpretation: question.hr_interpretation
+                    };
+                }),
+                final_verdict: `This candidate demonstrates a consistent pattern of deep visual reasoning, exploratory analysis, and
+systems-level thinking across all six questions.
+They are best suited for roles involving analysis, design, strategy, or research, where understanding
+complex structures is essential and time can be allocated for exploration.
+With appropriate role framing, clear priorities, and structured deadlines, this individual is likely to deliver
+high-quality insights and long-term value to the organisation.`,
             };
             this.logger.info('MAIL_VARIABLES', journeyId, { mailVariables });
             await this.reportPdfService.generatePdfAndSendMail(mailVariables);

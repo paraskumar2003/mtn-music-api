@@ -12,6 +12,10 @@ export declare class AIService {
         auditory: number;
         rhythmic: number;
         subconscious: number;
+        candidates_approach: string;
+        demonstrated_strengths: string;
+        omissions_or_delays: string;
+        hr_interpretation: string;
     }>;
     analyseDepartment(cognitiveProfile: {
         visual: number;

@@ -9,11 +9,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SendMailDto = exports.NeuroprofilingMailVariablesDto = void 0;
+exports.SendMailDto = exports.NewNeuroprofilingMailVariablesDto = exports.NeuroprofilingMailVariablesDto = void 0;
 const class_validator_1 = require("class-validator");
 class NeuroprofilingMailVariablesDto {
 }
 exports.NeuroprofilingMailVariablesDto = NeuroprofilingMailVariablesDto;
+class NewNeuroprofilingMailVariablesDto {
+}
+exports.NewNeuroprofilingMailVariablesDto = NewNeuroprofilingMailVariablesDto;
 class SendMailDto {
 }
 exports.SendMailDto = SendMailDto;

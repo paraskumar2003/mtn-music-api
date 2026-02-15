@@ -25,6 +25,16 @@ export class NeuroprofilingMailVariablesDto {
     hr_questions?: string[];
 }
 
+export class NewNeuroprofilingMailVariablesDto {
+    name: string;
+    email: string;
+    role: string;
+    experience: string;
+    test_duration: number;
+    report_date: string;
+    final_verdict: string;
+}
+
 export class SendMailDto {
     /* ---------- Recipients ---------- */
 
@@ -63,10 +73,10 @@ export class SendMailDto {
     @IsArray()
     attachments?: Array<
         | {
-              buffer: Buffer;
-              filename: string;
-              mimeType?: string;
-          }
+            buffer: Buffer;
+            filename: string;
+            mimeType?: string;
+        }
         | string
     >;
 }

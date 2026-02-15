@@ -6,6 +6,7 @@ import axios from 'axios';
 // import { ConfigService } from '@nestjs/config';
 import {
     NeuroprofilingMailVariablesDto,
+    NewNeuroprofilingMailVariablesDto,
     SendMailDto,
 } from '../dto/send-report.dto';
 import { ConfigService } from '@nestjs/config';
@@ -172,6 +173,110 @@ export class ReportPdfService {
         doc.fontSize(11).text(`Strength:\n${strength}`);
     }
 
+    async generatePdfNew(
+        data: NewNeuroprofilingMailVariablesDto & {
+            questions: {
+                question: string;
+                focus: string;
+                missed: string;
+                hr_interpretation: string;
+            }[];
+            final_verdict: string;
+        },
+    ): Promise<Buffer> {
+        const doc = new PDFDocument({
+            size: 'A4',
+            margin: 50,
+        });
+
+        const stream = new PassThrough();
+        const buffers: Buffer[] = [];
+
+        doc.pipe(stream);
+        stream.on('data', buffers.push.bind(buffers));
+
+        /* ---------- Title ---------- */
+        doc.fontSize(18)
+            .text('MTNP – Visual Cognitive Hiring Report (Deep Analysis)', {
+                align: 'center',
+            })
+            .moveDown(1.2);
+
+        doc.fontSize(11)
+            .text('Intended Reader: HR / Hiring Manager', { align: 'center' })
+            .moveDown(1.5);
+
+        /* ---------- Candidate Information ---------- */
+        this.sectionTitle(doc, 'Candidate Information');
+
+        this.kv(doc, 'Candidate Name', data.name);
+        this.kv(doc, 'Email', data.email);
+        this.kv(doc, 'Role Applied For', data.role);
+        this.kv(doc, 'Assessment Basis', 'Visual interpretation of structured material');
+        this.kv(doc, 'Questions Evaluated', `${data.questions.length}`);
+        this.kv(doc, 'Assessment Date', data.report_date);
+
+        /* ---------- Report Overview ---------- */
+        this.sectionTitle(doc, 'Report Overview');
+
+        doc.fontSize(11).text(
+            `This report provides a detailed, question-by-question analysis of how the candidate visually interprets complex information.
+The evaluation focuses on attention patterns, prioritisation behaviour, synthesis ability, and strategic reasoning.
+Each section highlights what the candidate focused on, what was missed, and the resulting HR interpretation.`,
+            { align: 'justify' },
+        );
+
+        /* ---------- Question-wise Analysis ---------- */
+        this.sectionTitle(doc, 'Detailed Question Analysis');
+
+        data.questions.forEach((q, index) => {
+            doc.moveDown(0.8);
+
+            doc.fontSize(13)
+                .text(`Question ${index + 1}`, { underline: true })
+                .moveDown(0.4);
+
+            doc.fontSize(11).text(`Focus Area:`, { continued: true }).font('Helvetica-Bold')
+                .text(` ${q.focus}`)
+                .font('Helvetica')
+                .moveDown(0.3);
+
+            doc.fontSize(11).text(`What Was Missed:`, { continued: true }).font('Helvetica-Bold')
+                .text(` ${q.missed}`)
+                .font('Helvetica')
+                .moveDown(0.3);
+
+            doc.fontSize(11).text(`HR Interpretation:`, { continued: true }).font('Helvetica-Bold')
+                .text(` ${q.hr_interpretation}`)
+                .font('Helvetica')
+                .moveDown(0.6);
+        });
+
+        /* ---------- Final HR Verdict ---------- */
+        this.sectionTitle(doc, 'Final HR Verdict');
+
+        doc.fontSize(11).text(data.final_verdict, { align: 'justify' });
+
+        /* ---------- Advisory ---------- */
+        this.sectionTitle(doc, 'Important Advisory');
+
+        doc.fontSize(10).text(
+            `This report is generated using AI-assisted analysis of visual interpretation behaviour.
+It is intended to support hiring, role placement, and cognitive alignment discussions.
+This assessment does not constitute a psychological or medical evaluation and should be interpreted alongside interviews and practical assessments.`,
+            { align: 'justify' },
+        );
+
+        doc.end();
+
+        return new Promise(resolve => {
+            stream.on('end', () => {
+                resolve(Buffer.concat(buffers));
+            });
+        });
+    }
+
+
     async generatePdf(data: NeuroprofilingMailVariablesDto): Promise<Buffer> {
         const doc = new PDFDocument({
             size: 'A4',
@@ -270,7 +375,7 @@ There are no right or wrong answers. This assessment highlights your natural thi
             doc,
             'Subconscious & Abstract Interpretation',
             this.strength_text.subconscious[
-                this.getLevel(data.mix_subconscious)
+            this.getLevel(data.mix_subconscious)
             ],
         );
 
@@ -311,8 +416,16 @@ This report does not constitute a medical, psychological, or clinical diagnosis 
         });
     }
 
-    async generatePdfAndSendMail(data: NeuroprofilingMailVariablesDto) {
-        const pdfBuffer = await this.generatePdf(data);
+    async generatePdfAndSendMail(data: NewNeuroprofilingMailVariablesDto & {
+        questions: {
+            question: string;
+            focus: string;
+            missed: string;
+            hr_interpretation: string;
+        }[];
+        final_verdict: string;
+    }) {
+        const pdfBuffer = await this.generatePdfNew(data);
 
         /** use this.sendMail to send the email */
         let result = await this.sendMail({
