@@ -224,17 +224,17 @@ There are no right or wrong answers. This assessment highlights your natural thi
         );
 
         /* ---------- Corporate Department Recommendation ---------- */
-        this.sectionTitle(doc, 'Most Suitable Corporate Department');
+        // this.sectionTitle(doc, 'Most Suitable Corporate Department');
 
-        this.kv(doc, 'Primary Department', data.recommended_department);
+        // this.kv(doc, 'Primary Department', data.recommended_department);
 
-        if (data.secondary_department) {
-            this.kv(doc, 'Secondary Department', data.secondary_department);
-        }
+        // if (data.secondary_department) {
+        //     this.kv(doc, 'Secondary Department', data.secondary_department);
+        // }
 
-        doc.moveDown(0.5)
-            .fontSize(11)
-            .text(data.department_reasoning, { align: 'justify' });
+        // doc.moveDown(0.5)
+        //     .fontSize(11)
+        //     .text(data.department_reasoning, { align: 'justify' });
 
         /* ---------- Breakdown ---------- */
         this.sectionTitle(doc, 'Cognitive Profile Breakdown');
@@ -278,22 +278,22 @@ There are no right or wrong answers. This assessment highlights your natural thi
         this.sectionTitle(doc, 'Important Advisory');
 
         /* ---------- HR Interview Preparation ---------- */
-        this.sectionTitle(doc, 'Recommended HR Interview Questions');
+        // this.sectionTitle(doc, 'Recommended HR Interview Questions');
 
-        doc.fontSize(11).text(
-            `Based on your cognitive profile and dominant thinking style, the following HR interview questions are commonly asked for roles aligned with your recommended department.`,
-            { align: 'justify' },
-        );
+        // doc.fontSize(11).text(
+        //     `Based on your cognitive profile and dominant thinking style, the following HR interview questions are commonly asked for roles aligned with your recommended department.`,
+        //     { align: 'justify' },
+        // );
 
-        doc.moveDown(0.8);
+        // doc.moveDown(0.8);
 
-        data.hr_questions?.forEach((question, index) => {
-            doc.fontSize(11)
-                .text(`${index + 1}. ${question}`, {
-                    align: 'left',
-                })
-                .moveDown(0.4);
-        });
+        // data.hr_questions?.forEach((question, index) => {
+        //     doc.fontSize(11)
+        //         .text(`${index + 1}. ${question}`, {
+        //             align: 'left',
+        //         })
+        //         .moveDown(0.4);
+        // });
 
         doc.fontSize(10).text(
             `This neuroprofiling report is generated using AI-assisted analysis of visual interpretation patterns.

@@ -291,16 +291,16 @@ export class QuizService implements OnModuleInit {
             total_score: quiz.total_score,
             nextQuestion: nextQuestion
                 ? {
-                      question_id: nextQuestion._id.toString(),
-                      prompt_html: nextQuestion.prompt_html,
-                      image_url: nextQuestion.image_url,
-                      audio_url: nextQuestion.audio_url,
-                      options: nextQuestion.options,
-                      dimension: nextQuestion.dimension,
-                      level: nextQuestion.level,
-                      question_type: nextQuestion.question_type,
-                      timer_in_seconds: this.timerInSeconds,
-                  }
+                    question_id: nextQuestion._id.toString(),
+                    prompt_html: nextQuestion.prompt_html,
+                    image_url: nextQuestion.image_url,
+                    audio_url: nextQuestion.audio_url,
+                    options: nextQuestion.options,
+                    dimension: nextQuestion.dimension,
+                    level: nextQuestion.level,
+                    question_type: nextQuestion.question_type,
+                    timer_in_seconds: this.timerInSeconds,
+                }
                 : {},
             is_last_question: !!!nextQuestion,
             remaining_questions:
@@ -347,13 +347,18 @@ export class QuizService implements OnModuleInit {
 
         submittedQuestionDoc.is_evaluated_by_llm = true;
         submittedQuestionDoc.confidence_score =
-            aiResponse?.confidence_score || 0;
+            aiResponse?.confidence_score || 0; 1
         submittedQuestionDoc.reason = aiResponse?.reason || '';
 
         submittedQuestionDoc.visual = aiResponse?.visual || 0;
         submittedQuestionDoc.auditory = aiResponse?.auditory || 0;
         submittedQuestionDoc.rhythmic = aiResponse?.rhythmic || 0;
         submittedQuestionDoc.subconscious = aiResponse?.subconscious || 0;
+
+        submittedQuestionDoc.candidates_approach = aiResponse?.candidates_approach || '';
+        submittedQuestionDoc.demonstrated_strengths = aiResponse?.demonstrated_strengths || '';
+        submittedQuestionDoc.omissions_or_delays = aiResponse?.omissions_or_delays || '';
+        submittedQuestionDoc.hr_interpretation = aiResponse?.hr_interpretation || '';
 
         submittedQuestionDoc.err_while_evaluation_by_llm =
             aiResponse?.is_error || null;

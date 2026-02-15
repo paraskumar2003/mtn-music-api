@@ -9,7 +9,7 @@ import axios from 'axios';
 
 @Injectable()
 export class AIService {
-    constructor(private readonly logger: CustomLoggerService) {}
+    constructor(private readonly logger: CustomLoggerService) { }
 
     async analyseAnswer(
         question: QuestionDocument,
@@ -23,6 +23,10 @@ export class AIService {
         auditory: number;
         rhythmic: number;
         subconscious: number;
+        candidates_approach: string;
+        demonstrated_strengths: string;
+        omissions_or_delays: string;
+        hr_interpretation: string;
     }> {
         const journeyId = v4();
 
@@ -74,6 +78,10 @@ export class AIService {
                 auditory: result.auditory,
                 rhythmic: result.rhythmic,
                 subconscious: result.subconscious,
+                candidates_approach: result.candidates_approach,
+                demonstrated_strengths: result.demonstrated_strengths,
+                omissions_or_delays: result.omissions_or_delays,
+                hr_interpretation: result.hr_interpretation,
             };
         } catch (err) {
             this.logger.error('ERROR_WHILE_ANALYSING_ANSWER', journeyId, {
@@ -92,6 +100,10 @@ export class AIService {
                 auditory: 7,
                 rhythmic: 6,
                 subconscious: 5,
+                candidates_approach: '',
+                demonstrated_strengths: '',
+                omissions_or_delays: '',
+                hr_interpretation: '',
             };
         }
     }

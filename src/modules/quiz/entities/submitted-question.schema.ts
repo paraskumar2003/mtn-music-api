@@ -84,6 +84,18 @@ export class SubmittedQuestion extends BaseSchema {
 
     @Prop({ required: false })
     subconscious?: number;
+
+    @Prop({ required: false })
+    candidates_approach?: string;
+
+    @Prop({ required: false })
+    demonstrated_strengths?: string;
+
+    @Prop({ required: false })
+    omissions_or_delays?: string;
+
+    @Prop({ required: false })
+    hr_interpretation?: string;
 }
 
 export const SubmittedQuestionSchema =
