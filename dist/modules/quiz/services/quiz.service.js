@@ -37,7 +37,7 @@ let QuizService = class QuizService {
         this.configService = configService;
         this.userService = userService;
         this.reportPdfService = reportPdfService;
-        this.timerInSeconds = 1 * 20;
+        this.timerInSeconds = 3 * 60;
         this.totalNoOfQuestionToBeAsked = +this.configService.get('NO_OF_QUESTIONS_TO_BE_ASKED');
         if (!this.totalNoOfQuestionToBeAsked) {
             throw new Error('NO_OF_QUESTIONS_TO_BE_ASKED is not defined in .env or is not a number');
@@ -237,10 +237,14 @@ let QuizService = class QuizService {
         submittedQuestionDoc.auditory = aiResponse?.auditory || 0;
         submittedQuestionDoc.rhythmic = aiResponse?.rhythmic || 0;
         submittedQuestionDoc.subconscious = aiResponse?.subconscious || 0;
-        submittedQuestionDoc.candidates_approach = aiResponse?.candidates_approach || '';
-        submittedQuestionDoc.demonstrated_strengths = aiResponse?.demonstrated_strengths || '';
-        submittedQuestionDoc.omissions_or_delays = aiResponse?.omissions_or_delays || '';
-        submittedQuestionDoc.hr_interpretation = aiResponse?.hr_interpretation || '';
+        submittedQuestionDoc.candidates_approach =
+            aiResponse?.candidates_approach || '';
+        submittedQuestionDoc.demonstrated_strengths =
+            aiResponse?.demonstrated_strengths || '';
+        submittedQuestionDoc.omissions_or_delays =
+            aiResponse?.omissions_or_delays || '';
+        submittedQuestionDoc.hr_interpretation =
+            aiResponse?.hr_interpretation || '';
         submittedQuestionDoc.err_while_evaluation_by_llm =
             aiResponse?.is_error || null;
         await submittedQuestionDoc.save();
@@ -261,9 +265,11 @@ let QuizService = class QuizService {
             if (!quiz) {
                 this.logger.info('QUIZ_NOT_FOUND_WHILE_REPORT_GENERATION', journeyId, { payload });
             }
-            let submittedQuestions = await this.submittedQuestionModel.find({
+            let submittedQuestions = await this.submittedQuestionModel
+                .find({
                 quiz: new mongoose_2.Types.ObjectId(payload.quiz_id),
-            }).populate({
+            })
+                .populate({
                 path: 'question',
                 select: 'question_text',
             });
@@ -286,7 +292,7 @@ let QuizService = class QuizService {
                         question: question.question.question_text,
                         focus: question.demonstrated_strengths,
                         missed: question.omissions_or_delays,
-                        hr_interpretation: question.hr_interpretation
+                        hr_interpretation: question.hr_interpretation,
                     };
                 }),
                 final_verdict: `This candidate demonstrates a consistent pattern of deep visual reasoning, exploratory analysis, and
