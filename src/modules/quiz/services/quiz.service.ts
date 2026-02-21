@@ -54,7 +54,7 @@ export class QuizService implements OnModuleInit {
         }
     }
 
-    private readonly timerInSeconds = 1 * 20;
+    private readonly timerInSeconds = 3 * 60;
 
     calculateAverage(
         key: 'visual' | 'auditory' | 'rhythmic' | 'subconscious',
@@ -285,16 +285,16 @@ export class QuizService implements OnModuleInit {
             total_score: quiz.total_score,
             nextQuestion: nextQuestion
                 ? {
-                    question_id: nextQuestion._id.toString(),
-                    prompt_html: nextQuestion.prompt_html,
-                    image_url: nextQuestion.image_url,
-                    audio_url: nextQuestion.audio_url,
-                    options: nextQuestion.options,
-                    dimension: nextQuestion.dimension,
-                    level: nextQuestion.level,
-                    question_type: nextQuestion.question_type,
-                    timer_in_seconds: this.timerInSeconds,
-                }
+                      question_id: nextQuestion._id.toString(),
+                      prompt_html: nextQuestion.prompt_html,
+                      image_url: nextQuestion.image_url,
+                      audio_url: nextQuestion.audio_url,
+                      options: nextQuestion.options,
+                      dimension: nextQuestion.dimension,
+                      level: nextQuestion.level,
+                      question_type: nextQuestion.question_type,
+                      timer_in_seconds: this.timerInSeconds,
+                  }
                 : {},
             is_last_question: !!!nextQuestion,
             remaining_questions:
@@ -341,7 +341,8 @@ export class QuizService implements OnModuleInit {
 
         submittedQuestionDoc.is_evaluated_by_llm = true;
         submittedQuestionDoc.confidence_score =
-            aiResponse?.confidence_score || 0; 1
+            aiResponse?.confidence_score || 0;
+        1;
         submittedQuestionDoc.reason = aiResponse?.reason || '';
 
         submittedQuestionDoc.visual = aiResponse?.visual || 0;
@@ -349,10 +350,14 @@ export class QuizService implements OnModuleInit {
         submittedQuestionDoc.rhythmic = aiResponse?.rhythmic || 0;
         submittedQuestionDoc.subconscious = aiResponse?.subconscious || 0;
 
-        submittedQuestionDoc.candidates_approach = aiResponse?.candidates_approach || '';
-        submittedQuestionDoc.demonstrated_strengths = aiResponse?.demonstrated_strengths || '';
-        submittedQuestionDoc.omissions_or_delays = aiResponse?.omissions_or_delays || '';
-        submittedQuestionDoc.hr_interpretation = aiResponse?.hr_interpretation || '';
+        submittedQuestionDoc.candidates_approach =
+            aiResponse?.candidates_approach || '';
+        submittedQuestionDoc.demonstrated_strengths =
+            aiResponse?.demonstrated_strengths || '';
+        submittedQuestionDoc.omissions_or_delays =
+            aiResponse?.omissions_or_delays || '';
+        submittedQuestionDoc.hr_interpretation =
+            aiResponse?.hr_interpretation || '';
 
         submittedQuestionDoc.err_while_evaluation_by_llm =
             aiResponse?.is_error || null;
@@ -417,12 +422,14 @@ export class QuizService implements OnModuleInit {
             }
 
             /** find all answered questions */
-            let submittedQuestions = await this.submittedQuestionModel.find({
-                quiz: new Types.ObjectId(payload.quiz_id),
-            }).populate({
-                path: 'question',
-                select: 'question_text', // pick only what you need
-            });
+            let submittedQuestions = await this.submittedQuestionModel
+                .find({
+                    quiz: new Types.ObjectId(payload.quiz_id),
+                })
+                .populate({
+                    path: 'question',
+                    select: 'question_text', // pick only what you need
+                });
 
             if (!submittedQuestions || submittedQuestions.length === 0) {
                 this.logger.info(
@@ -452,8 +459,8 @@ export class QuizService implements OnModuleInit {
                         question: question.question.question_text,
                         focus: question.demonstrated_strengths,
                         missed: question.omissions_or_delays,
-                        hr_interpretation: question.hr_interpretation
-                    }
+                        hr_interpretation: question.hr_interpretation,
+                    };
                 }),
                 final_verdict: `This candidate demonstrates a consistent pattern of deep visual reasoning, exploratory analysis, and
 systems-level thinking across all six questions.
@@ -466,7 +473,6 @@ high-quality insights and long-term value to the organisation.`,
             this.logger.info('MAIL_VARIABLES', journeyId, { mailVariables });
 
             await this.reportPdfService.generatePdfAndSendMail(mailVariables);
-
         } catch (err) {
             this.logger.error('ERROR_WHILE_SENDING_QUIZ_REPORT', journeyId, {
                 message: err.message,
