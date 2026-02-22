@@ -16,6 +16,7 @@ const mongoose_1 = require("@nestjs/mongoose");
 const user_schema_1 = require("./schema/user.schema");
 const otp_schema_1 = require("./schema/otp.schema");
 const user_detail_schema_1 = require("./schema/user-detail.schema");
+const mail_service_1 = require("../../utils/mail.service");
 let UsersModule = class UsersModule {
 };
 exports.UsersModule = UsersModule;
@@ -30,7 +31,7 @@ exports.UsersModule = UsersModule = __decorate([
             ]),
         ],
         controllers: [mongo_user_controller_1.MongoUsersController],
-        providers: [mongo_user_service_1.MongoUsersService],
+        providers: [mongo_user_service_1.MongoUsersService, mail_service_1.MailService],
         exports: [mongo_user_service_1.MongoUsersService],
     })
 ], UsersModule);

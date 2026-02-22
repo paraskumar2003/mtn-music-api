@@ -21,18 +21,18 @@ const jwt = require("jsonwebtoken");
 const config_1 = require("@nestjs/config");
 const user_schema_1 = require("../schema/user.schema");
 const otp_schema_1 = require("../schema/otp.schema");
-const axios_1 = require("axios");
 const user_detail_schema_1 = require("../schema/user-detail.schema");
 const mongoose_3 = require("mongoose");
+const mail_service_1 = require("../../../utils/mail.service");
 let MongoUsersService = class MongoUsersService {
-    constructor(mongoUserModel, otpModel, userDetailsModel, configService) {
+    constructor(mongoUserModel, otpModel, userDetailsModel, configService, mailService) {
         this.mongoUserModel = mongoUserModel;
         this.otpModel = otpModel;
         this.userDetailsModel = userDetailsModel;
         this.configService = configService;
+        this.mailService = mailService;
     }
     async sendOtpEmail(email, otp) {
-        const apiUrl = 'https://communicationapi2.almond.solutions/api/mail';
         const htmlContent = `
           <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 40px;">
             <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 30px; text-align: center;">
@@ -61,11 +61,10 @@ let MongoUsersService = class MongoUsersService {
           </div>
         `;
         try {
-            await axios_1.default.post(apiUrl, {
-                mailName: 'OTP Verification',
+            await this.mailService.sendMail({
+                to: email,
+                from: 'noreply@themusicneuroscientist.org',
                 mailSubject: 'Your OTP Code',
-                from: 'noreply@almonds.ai',
-                to: [email],
                 htmlContent,
                 attachments: [],
             });
@@ -289,6 +288,7 @@ exports.MongoUsersService = MongoUsersService = __decorate([
     __metadata("design:paramtypes", [mongoose_2.Model,
         mongoose_2.Model,
         mongoose_2.Model,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        mail_service_1.MailService])
 ], MongoUsersService);
 //# sourceMappingURL=mongo-user.service.js.map

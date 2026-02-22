@@ -6,12 +6,14 @@ import { VerifyEmailOtpDto } from '../dto/otp/verify-otp.dto';
 import { Otp } from '../schema/otp.schema';
 import { UserDetails } from '../schema/user-detail.schema';
 import { Types } from 'mongoose';
+import { MailService } from 'src/utils/mail.service';
 export declare class MongoUsersService {
     private readonly mongoUserModel;
     private readonly otpModel;
     private readonly userDetailsModel;
     private readonly configService;
-    constructor(mongoUserModel: Model<MongoUserDocument>, otpModel: Model<Otp>, userDetailsModel: Model<UserDetails>, configService: ConfigService);
+    private readonly mailService;
+    constructor(mongoUserModel: Model<MongoUserDocument>, otpModel: Model<Otp>, userDetailsModel: Model<UserDetails>, configService: ConfigService, mailService: MailService);
     private sendOtpEmail;
     registerUser(data: RegisterUserDto): Promise<{
         otp_sent: boolean;

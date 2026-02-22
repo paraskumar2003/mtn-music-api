@@ -13,9 +13,9 @@ import { MongoUser, UserRole, MongoUserDocument } from '../schema/user.schema';
 import { RegisterUserDto } from '../dto/create-mongo-user.dto';
 import { VerifyEmailOtpDto } from '../dto/otp/verify-otp.dto';
 import { Otp, OtpStatus } from '../schema/otp.schema';
-import axios from 'axios';
 import { UserDetails } from '../schema/user-detail.schema';
 import { Types } from 'mongoose';
+import { MailService } from 'src/utils/mail.service';
 
 @Injectable()
 export class MongoUsersService {
@@ -27,11 +27,10 @@ export class MongoUsersService {
         @InjectModel(UserDetails.name)
         private readonly userDetailsModel: Model<UserDetails>,
         private readonly configService: ConfigService,
+        private readonly mailService: MailService,
     ) {}
 
     private async sendOtpEmail(email: string, otp: number): Promise<void> {
-        const apiUrl = 'https://communicationapi2.almond.solutions/api/mail';
-
         // ✅ Beautiful HTML email content
         const htmlContent = `
           <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 40px;">
@@ -62,11 +61,10 @@ export class MongoUsersService {
         `;
 
         try {
-            await axios.post(apiUrl, {
-                mailName: 'OTP Verification',
+            await this.mailService.sendMail({
+                to: email,
+                from: 'noreply@themusicneuroscientist.org',
                 mailSubject: 'Your OTP Code',
-                from: 'noreply@almonds.ai',
-                to: [email],
                 htmlContent,
                 attachments: [],
             });

@@ -136,3 +136,6 @@ build
 
 
 .trash
+
+*.ignore.js
+*.ignore.ts

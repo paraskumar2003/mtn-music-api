@@ -7,6 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MongoUser, MongoUserSchema } from './schema/user.schema';
 import { OtpSchema } from './schema/otp.schema';
 import { UserDetails, UserDetailsSchema } from './schema/user-detail.schema';
+import { MailService } from 'src/utils/mail.service';
 
 @Module({
     imports: [
@@ -18,7 +19,7 @@ import { UserDetails, UserDetailsSchema } from './schema/user-detail.schema';
         ]),
     ],
     controllers: [MongoUsersController],
-    providers: [MongoUsersService],
+    providers: [MongoUsersService, MailService],
     exports: [MongoUsersService],
 })
 export class UsersModule {}
